@@ -1,0 +1,17 @@
+<Project>
+
+  <PropertyGroup>
+    <AssemblyName>SelianSoft.System.Resources.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>SelianSoft.System.Resources.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>bradselw</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bradselw/SystemResources</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/bradselw/SystemResources</RepositoryUrl>
+    <PackageTags>system;resources</PackageTags>
+  </PropertyGroup>
+  
+</Project>

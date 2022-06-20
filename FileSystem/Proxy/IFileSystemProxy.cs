@@ -1,6 +1,6 @@
-﻿namespace FileSystem
+﻿namespace SelianSoft.System.Resources.FileSystem.Proxy
 {
-    public interface IFileSystem
+    public interface IFileSystemProxy
     {
         void CreateDirectory(string path);
 

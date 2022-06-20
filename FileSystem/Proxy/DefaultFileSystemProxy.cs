@@ -1,8 +1,8 @@
 ﻿using System.IO;
 
-namespace FileSystem
+namespace SelianSoft.System.Resources.FileSystem.Proxy
 {
-    public class DefaultFileSystem : IFileSystem
+    public class DefaultFileSystemProxy : IFileSystemProxy
     {
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
         {

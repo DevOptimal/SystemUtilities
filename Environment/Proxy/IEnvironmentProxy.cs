@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Environment
+namespace SelianSoft.System.Resources.Environment.Proxy
 {
-    public interface IEnvironment
+    public interface IEnvironmentProxy
     {
         string GetEnvironmentVariable(string name, EnvironmentVariableTarget target);
 

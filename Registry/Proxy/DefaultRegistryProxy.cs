@@ -1,8 +1,8 @@
 ﻿using Microsoft.Win32;
 
-namespace Registry
+namespace SelianSoft.System.Resources.Registry.Proxy
 {
-    public class DefaultRegistry : IRegistry
+    public class DefaultRegistryProxy : IRegistryProxy
     {
         public void CreateRegistryKey(RegistryHive hive, RegistryView view, string subKey)
         {
