@@ -13,5 +13,12 @@
     <RepositoryUrl>https://github.com/bradselw/SystemResources</RepositoryUrl>
     <PackageTags>system;resources</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.107">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   
 </Project>
