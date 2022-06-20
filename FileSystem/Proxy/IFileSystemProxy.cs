@@ -1,4 +1,6 @@
-﻿namespace bradselw.SystemResources.FileSystem.Proxy
+﻿using System.IO;
+
+namespace bradselw.SystemResources.FileSystem.Proxy
 {
     public interface IFileSystemProxy
     {
@@ -8,10 +10,12 @@
 
         bool DirectoryExists(string path);
 
+        void CopyFile(string sourcePath, string destinationPath, bool overwrite);
+
         void DeleteFile(string path);
 
         bool FileExists(string path);
 
-        void CopyFile(string sourcePath, string destinationPath, bool overwrite);
+        FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share);
     }
 }

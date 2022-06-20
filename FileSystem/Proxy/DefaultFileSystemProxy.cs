@@ -33,5 +33,10 @@ namespace bradselw.SystemResources.FileSystem.Proxy
         {
             return File.Exists(path);
         }
+
+        public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
+        {
+            return File.Open(path, mode, access, share);
+        }
     }
 }
