@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SelianSoft.System.Resources.FileSystem.Proxy
+namespace bradselw.SystemResources.FileSystem.Proxy
 {
     public class DefaultFileSystemProxy : IFileSystemProxy
     {

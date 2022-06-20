@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SelianSoft.System.Resources.Environment.Proxy
+namespace bradselw.SystemResources.Environment.Proxy
 {
     public interface IEnvironmentProxy
     {

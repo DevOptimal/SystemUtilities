@@ -1,4 +1,4 @@
-﻿namespace SelianSoft.System.Resources.FileSystem.Proxy
+﻿namespace bradselw.SystemResources.FileSystem.Proxy
 {
     public interface IFileSystemProxy
     {

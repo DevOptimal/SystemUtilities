@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace SelianSoft.System.Resources.Registry.Proxy
+namespace bradselw.SystemResources.Registry.Proxy
 {
     public class DefaultRegistryProxy : IRegistryProxy
     {
