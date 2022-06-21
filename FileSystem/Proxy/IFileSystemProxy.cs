@@ -6,6 +6,8 @@ namespace bradselw.SystemResources.FileSystem.Proxy
     {
         void CreateDirectory(string path);
 
+        void CreateFile(string path);
+
         void DeleteDirectory(string path, bool recursive);
 
         bool DirectoryExists(string path);

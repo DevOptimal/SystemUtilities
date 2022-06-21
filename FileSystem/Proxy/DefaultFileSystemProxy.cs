@@ -14,6 +14,11 @@ namespace bradselw.SystemResources.FileSystem.Proxy
             Directory.CreateDirectory(path);
         }
 
+        public void CreateFile(string path)
+        {
+            File.Create(path);
+        }
+
         public void DeleteDirectory(string path, bool recursive)
         {
             Directory.Delete(path, recursive);
