@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace bradselw.SystemResources.FileSystem.Proxy
+namespace bradselw.SystemResources.FileSystem
 {
     public interface IFileSystemProxy
     {

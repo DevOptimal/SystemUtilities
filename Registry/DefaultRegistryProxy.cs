@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace bradselw.SystemResources.Registry.Proxy
+namespace DevOptional.System.Resources.Registry
 {
     public class DefaultRegistryProxy : IRegistryProxy
     {

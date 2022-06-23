@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace bradselw.SystemResources.Environment.Proxy
+namespace bradselw.SystemResources.Environment
 {
     public interface IEnvironmentProxy
     {
