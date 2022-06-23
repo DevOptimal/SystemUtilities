@@ -18,7 +18,7 @@ namespace bradselw.SystemResources.Registry.Proxy
 
             if (!recursive && (key.GetSubKeyNames().Any() || key.GetValueNames().Any()))
             {
-                throw new IOException();
+                throw new IOException("The registry key is not empty.");
             }
 
             baseKey.DeleteSubKeyTree(subKey, throwOnMissingSubKey: true);
