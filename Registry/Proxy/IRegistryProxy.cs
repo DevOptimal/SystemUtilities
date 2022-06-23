@@ -6,7 +6,7 @@ namespace bradselw.SystemResources.Registry.Proxy
     {
         void CreateRegistryKey(RegistryHive hive, RegistryView view, string subKey);
 
-        void DeleteRegistryKey(RegistryHive hive, RegistryView view, string subKey);
+        void DeleteRegistryKey(RegistryHive hive, RegistryView view, string subKey, bool recursive);
 
         void DeleteRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name);
 
