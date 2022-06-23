@@ -1,4 +1,6 @@
 ﻿using Microsoft.Win32;
+using System.IO;
+using System.Linq;
 
 namespace bradselw.SystemResources.Registry.Proxy
 {
@@ -9,9 +11,17 @@ namespace bradselw.SystemResources.Registry.Proxy
             RegistryKey.OpenBaseKey(hive, view).CreateSubKey(subKey);
         }
 
-        public void DeleteRegistryKey(RegistryHive hive, RegistryView view, string subKey)
+        public void DeleteRegistryKey(RegistryHive hive, RegistryView view, string subKey, bool recursive)
         {
-            RegistryKey.OpenBaseKey(hive, view).DeleteSubKey(subKey);
+            var baseKey = RegistryKey.OpenBaseKey(hive, view);
+            var key = baseKey.OpenSubKey(subKey);
+
+            if (!recursive && (key.GetSubKeyNames().Any() || key.GetValueNames().Any()))
+            {
+                throw new IOException();
+            }
+
+            baseKey.DeleteSubKeyTree(subKey, throwOnMissingSubKey: true);
         }
 
         public void DeleteRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
