@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace bradselw.SystemResources.Registry.Proxy
+namespace DevOptional.System.Resources.Registry
 {
     public interface IRegistryProxy
     {

@@ -1,6 +1,6 @@
-# SystemResources
+# System.Resources
 
-Tools for interacting with system resources.
+Libraries for interacting with system resources.
 
 ## Proxies
 
