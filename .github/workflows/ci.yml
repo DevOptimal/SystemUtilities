@@ -29,7 +29,7 @@ jobs:
       run: dotnet pack -c:Release
     - name: Install Strong Name Key
       run: |
-        [Convert]::FromBase64String('${{ secrets.STRONG_NAME_KEY }}') | Set-Content -Path '.\StrongNameKey.snk' -Encoding byte
+        [Convert]::FromBase64String('${{ secrets.STRONG_NAME_KEY }}') | Set-Content -Path '.\StrongNameKey.snk' -AsByteStream
       shell: pwsh
     - name: Pack (Strong Name Signed)
       run: dotnet pack -c:Release -p:StrongNameSignAssembly
