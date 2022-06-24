@@ -32,6 +32,6 @@ jobs:
         [Convert]::FromBase64String('${{ secrets.STRONG_NAME_KEY }}') | Set-Content -Path '.\StrongNameKey.snk' -AsByteStream
       shell: pwsh
     - name: Pack (Strong Name Signed)
-      run: dotnet pack -c:Release -p:StrongNameSignAssembly
+      run: dotnet pack -c:Release -p:StrongNameSignAssembly=true
     - name: Publish package
       run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
