@@ -5,7 +5,7 @@ on:
     branches:
     - 'main'
     paths-ignore:
-    - '.github/workflows/**'
+#     - '.github/workflows/**'
     - 'README.md'
 
 jobs:
@@ -34,6 +34,4 @@ jobs:
     - name: Pack
       run: dotnet pack --configuration Release --no-build
     - name: Publish package
-      run: |
-        dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
-        dotnet nuget push **/*.nupkg --source github --skip-duplicate
+      run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
