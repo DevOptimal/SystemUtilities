@@ -1,16 +1,16 @@
 <Project>
 
   <PropertyGroup>
-    <AssemblyName>DevOptional.System.Resources.$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>DevOptional.System.Resources.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AssemblyName>bradselw.System.Resources.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>bradselw.System.Resources.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>bradselw</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/DevOptional/System.Resources</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/bradselw/System.Resources</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/DevOptional/System.Resources</RepositoryUrl>
+    <RepositoryUrl>https://github.com/bradselw/System.Resources</RepositoryUrl>
     <PackageTags>devops;system;resources</PackageTags>
   </PropertyGroup>
 
