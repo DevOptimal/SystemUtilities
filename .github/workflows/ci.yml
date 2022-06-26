@@ -25,13 +25,13 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
     - name: Pack
-      run: dotnet pack -c:Release
-    - name: Install Strong Name Key
-      run: |
-        [Convert]::FromBase64String('${{ secrets.STRONG_NAME_KEY }}') | Set-Content -Path '.\StrongNameKey.snk' -AsByteStream
-      shell: pwsh
-    - name: Pack (Strong Name Signed)
-      run: dotnet pack -c:Release -p:StrongNameSignAssembly=true
+      run: dotnet pack --configuration Release --no-build
     - name: Publish package
       run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
