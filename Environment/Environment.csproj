@@ -5,4 +5,10 @@
     <Description>Library for interacting with environment resources, such as environment variables.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>bradselw.System.Resources.Environment.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

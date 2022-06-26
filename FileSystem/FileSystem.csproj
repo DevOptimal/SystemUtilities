@@ -5,4 +5,10 @@
     <Description>Library for interacting with file system resources, such as directories and files.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>bradselw.System.Resources.FileSystem.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
