@@ -1,9 +1,9 @@
-﻿using System.Text;
+using System.Text;
 
 namespace bradselw.System.Resources.FileSystem.Tests
 {
     [TestClass]
-    public class OpenFileTests
+    public class FileTests
     {
         private MockFileSystemProxy proxyUnderTest;
 
@@ -11,6 +11,22 @@ namespace bradselw.System.Resources.FileSystem.Tests
         public void TestInitialize()
         {
             proxyUnderTest = new MockFileSystemProxy();
+        }
+
+        [TestMethod]
+        public void CorrectlyIdentifiesExistentAndNonexistentFiles()
+        {
+            var path = @"C:\temp\foo.bar";
+
+            Assert.IsFalse(proxyUnderTest.FileExists(path));
+
+            proxyUnderTest.CreateFile(path);
+
+            Assert.IsTrue(proxyUnderTest.FileExists(path));
+
+            proxyUnderTest.DeleteFile(path);
+
+            Assert.IsFalse(proxyUnderTest.FileExists(path));
         }
 
         [TestMethod]

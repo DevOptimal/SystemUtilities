@@ -82,24 +82,29 @@ namespace bradselw.System.Resources.FileSystem
 
                 var children = fileSystem.Keys.Where(p => Path.GetDirectoryName(p).Equals(path, StringComparison.OrdinalIgnoreCase));
 
-                if (recursive)
+                if (children.Any())
                 {
-                    foreach (var child in children)
+                    if (recursive)
                     {
-                        if (fileSystem[child] == null)
+                        foreach (var child in children)
                         {
-                            DeleteDirectory(child, recursive);
-                        }
-                        else
-                        {
-                            DeleteFile(child);
+                            if (fileSystem[child] == null)
+                            {
+                                DeleteDirectory(child, recursive);
+                            }
+                            else
+                            {
+                                DeleteFile(child);
+                            }
                         }
                     }
+                    else
+                    {
+                        throw new IOException("The directory specified by path is not empty.");
+                    }
                 }
-                else
-                {
-                    throw new IOException("The directory specified by path is not empty.");
-                }
+
+                fileSystem.Remove(path);
             }
             else
             {

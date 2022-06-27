@@ -1,7 +1,7 @@
 namespace bradselw.System.Resources.Environment.Tests
 {
     [TestClass]
-    public class GetEnvironmentVariableTests
+    public class EnvironmentVariableTests
     {
         private MockEnvironmentProxy proxyUnderTest;
 

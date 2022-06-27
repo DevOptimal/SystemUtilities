@@ -3,7 +3,7 @@ using Microsoft.Win32;
 namespace bradselw.System.Resources.Registry.Tests
 {
     [TestClass]
-    public class CreateRegistryKeyTests
+    public class RegistryKeyTests
     {
         private MockRegistryProxy proxyUnderTest;
 
