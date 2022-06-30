@@ -3,28 +3,47 @@
     [TestClass]
     public class DirectoryTests
     {
-        private MockFileSystemProxy proxyUnderTest;
+        private MockFileSystemProxy proxy;
+
+        private const string path = @"C:\foo\bar";
 
         [TestInitialize]
         public void TestInitialize()
         {
-            proxyUnderTest = new MockFileSystemProxy();
+            proxy = new MockFileSystemProxy();
         }
 
         [TestMethod]
-        public void CorrectlyIdentifiesExistentAndNonexistentDirectories()
+        public void CorrectlyIdentifiedNonexistentDirectories()
         {
-            var path = @"C:\temp\foo";
+            Assert.IsFalse(proxy.DirectoryExists(path));
+        }
 
-            Assert.IsFalse(proxyUnderTest.DirectoryExists(path));
+        [TestMethod]
+        public void CorrectlyIdentifiedExistentDirectories()
+        {
+            proxy.fileSystem[path] = null;
 
-            proxyUnderTest.CreateDirectory(path);
+            Assert.IsTrue(proxy.DirectoryExists(path));
+        }
 
-            Assert.IsTrue(proxyUnderTest.DirectoryExists(path));
+        [TestMethod]
+        public void CorrectlyCreatesDirectory()
+        {
+            proxy.CreateDirectory(path);
 
-            proxyUnderTest.DeleteDirectory(path, recursive: true);
+            Assert.IsTrue(proxy.fileSystem.ContainsKey(path));
+            Assert.AreEqual(null, proxy.fileSystem[path]);
+        }
 
-            Assert.IsFalse(proxyUnderTest.DirectoryExists(path));
+        [TestMethod]
+        public void CorrectlyDeletesDirectory()
+        {
+            proxy.fileSystem[path] = null;
+
+            proxy.DeleteDirectory(path, recursive: true);
+
+            Assert.IsFalse(proxy.fileSystem.ContainsKey(path));
         }
     }
 }

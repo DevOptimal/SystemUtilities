@@ -35,7 +35,7 @@ namespace bradselw.System.Resources.Environment
             }
             else
             {
-                environmentVariables[target].Add(name, value);
+                environmentVariables[target][name] = value;
             }
         }
     }

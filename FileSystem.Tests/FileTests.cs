@@ -5,28 +5,29 @@ namespace bradselw.System.Resources.FileSystem.Tests
     [TestClass]
     public class FileTests
     {
-        private MockFileSystemProxy proxyUnderTest;
+        private MockFileSystemProxy proxy;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            proxyUnderTest = new MockFileSystemProxy();
+            proxy = new MockFileSystemProxy();
         }
+
 
         [TestMethod]
         public void CorrectlyIdentifiesExistentAndNonexistentFiles()
         {
             var path = @"C:\temp\foo.bar";
 
-            Assert.IsFalse(proxyUnderTest.FileExists(path));
+            Assert.IsFalse(proxy.FileExists(path));
 
-            proxyUnderTest.CreateFile(path);
+            proxy.CreateFile(path);
 
-            Assert.IsTrue(proxyUnderTest.FileExists(path));
+            Assert.IsTrue(proxy.FileExists(path));
 
-            proxyUnderTest.DeleteFile(path);
+            proxy.DeleteFile(path);
 
-            Assert.IsFalse(proxyUnderTest.FileExists(path));
+            Assert.IsFalse(proxy.FileExists(path));
         }
 
         [TestMethod]
@@ -35,12 +36,12 @@ namespace bradselw.System.Resources.FileSystem.Tests
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
 
-            using (var stream = proxyUnderTest.OpenFile(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (var stream = proxy.OpenFile(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 stream.Write(expectedBytes);
             }
 
-            var actualBytes = proxyUnderTest.fileSystem[path];
+            var actualBytes = proxy.fileSystem[path];
             CollectionAssert.AreEqual(expectedBytes, actualBytes);
         }
 
@@ -49,10 +50,10 @@ namespace bradselw.System.Resources.FileSystem.Tests
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
-            proxyUnderTest.fileSystem[path] = expectedBytes;
+            proxy.fileSystem[path] = expectedBytes;
 
             var actualBytes = new byte[expectedBytes.Length];
-            using (var stream = proxyUnderTest.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
+            using (var stream = proxy.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
             {
                 stream.Read(actualBytes, 0, expectedBytes.Length);
             }
