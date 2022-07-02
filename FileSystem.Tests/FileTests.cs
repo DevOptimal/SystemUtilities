@@ -60,5 +60,30 @@ namespace bradselw.System.Resources.FileSystem.Tests
 
             CollectionAssert.AreEqual(expectedBytes, actualBytes);
         }
+
+        [TestMethod]
+        public void ConcurrentReads()
+        {
+            var path = Path.GetFullPath(@"C:\temp\foo.bar");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+            proxy.fileSystem[path] = expectedBytes;
+
+            var tasks = new List<Task>();
+            for (var i = 0; i < 10; i++)
+            {
+                tasks.Add(Task.Factory.StartNew(() =>
+                {
+                    var actualBytes = new byte[expectedBytes.Length];
+                    using (var stream = proxy.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        stream.Read(actualBytes, 0, expectedBytes.Length);
+                    }
+
+                    CollectionAssert.AreEqual(expectedBytes, actualBytes);
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+        }
     }
 }

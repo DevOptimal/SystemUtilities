@@ -8,6 +8,8 @@ namespace bradselw.System.Resources.FileSystem
 {
     public class MockFileSystemProxy : IFileSystemProxy
     {
+        internal readonly string id = Guid.NewGuid().ToString();
+
         internal readonly IDictionary<string, byte[]> fileSystem;
 
         public MockFileSystemProxy()

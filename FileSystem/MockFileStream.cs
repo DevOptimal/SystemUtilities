@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,9 +9,9 @@ namespace bradselw.System.Resources.FileSystem
 {
     public class MockFileStream : FileStream
     {
-        public static ConcurrentDictionary<string, int> fileReferenceCounter = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly static IDictionary<string, int> fileReferenceCounter = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        private bool disposedValue;
+        private bool disposed;
 
         private readonly string path;
 
@@ -31,34 +32,32 @@ namespace bradselw.System.Resources.FileSystem
             temporaryFilePath = Path.GetFullPath(path) ?? throw new ArgumentNullException(nameof(path));
         }
 
+        ~MockFileStream()
+        {
+            Dispose(disposing: false);
+        }
+
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
-            if (!disposedValue)
+            if (!disposed)
             {
+                base.Dispose(disposing);
 
-                if (disposing)
+                fileSystemProxy.fileSystem[path] = File.ReadAllBytes(temporaryFilePath);
+
+                // Clean up the temporary file on disk once all references to that file are gone.
+                lock (fileReferenceCounter)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    fileReferenceCounter[temporaryFilePath]--;
+
+                    if (fileReferenceCounter[temporaryFilePath] == 0)
+                    {
+                        File.Delete(temporaryFilePath);
+                    }
                 }
 
-                fileReferenceCounter.AddOrUpdate(temporaryFilePath, 0, (k, v) =>
-                {
-                    if (v == 1)
-                    {
-                        fileSystemProxy.fileSystem[path] = File.ReadAllBytes(k);
-                        File.Delete(k);
-                        return 0;
-                    }
-                    else
-                    {
-                        return v - 1;
-                    }
-                });
-
                 // TODO: set large fields to null
-                disposedValue = true;
+                disposed = true;
             }
         }
 
@@ -69,15 +68,24 @@ namespace bradselw.System.Resources.FileSystem
             string hash;
             using (var md5 = MD5.Create())
             {
-
                 hash = BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes(path.ToLower()))).Replace("-", string.Empty);
             }
 
-            var temporaryFilePath = Path.Combine(Path.GetTempPath(), hash);
+            var temporaryFilePath = Path.Combine(Path.GetTempPath(), string.Join(".", nameof(MockFileStream), fileSystemProxy.id, hash, "dat"));
 
-            if (fileReferenceCounter.AddOrUpdate(temporaryFilePath, 1, (k, v) => v + 1) == 1 && fileSystemProxy.FileExists(path))
+            lock (fileReferenceCounter)
             {
-                File.WriteAllBytes(temporaryFilePath, fileSystemProxy.fileSystem[path]);
+                if (!fileReferenceCounter.ContainsKey(temporaryFilePath))
+                {
+                    fileReferenceCounter[temporaryFilePath] = 0;
+                }
+
+                if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystemProxy.FileExists(path))
+                {
+                    File.WriteAllBytes(temporaryFilePath, fileSystemProxy.fileSystem[path]);
+                }
+
+                fileReferenceCounter[temporaryFilePath]++;
             }
 
             return temporaryFilePath;
