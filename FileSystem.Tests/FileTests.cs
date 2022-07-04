@@ -15,7 +15,7 @@ namespace bradselw.System.Resources.FileSystem.Tests
 
 
         [TestMethod]
-        public void CorrectlyIdentifiesExistentAndNonexistentFiles()
+        public void IdentifiesExistentAndNonexistentFiles()
         {
             var path = @"C:\temp\foo.bar";
 
@@ -31,7 +31,7 @@ namespace bradselw.System.Resources.FileSystem.Tests
         }
 
         [TestMethod]
-        public void CorrectlyWritesFile()
+        public void WritesFile()
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
@@ -46,7 +46,7 @@ namespace bradselw.System.Resources.FileSystem.Tests
         }
 
         [TestMethod]
-        public void CorrectlyReadsFile()
+        public void ReadsFile()
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");

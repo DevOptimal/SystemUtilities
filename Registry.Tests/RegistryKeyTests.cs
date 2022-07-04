@@ -22,13 +22,13 @@ namespace bradselw.System.Resources.Registry.Tests
         }
 
         [TestMethod]
-        public void CorrectlyIdentifiesNonexistentRegistryKey()
+        public void IdentifiesNonexistentRegistryKey()
         {
             Assert.IsFalse(proxy.RegistryKeyExists(hive, view, subKey));
         }
 
         [TestMethod]
-        public void CorrectlyIdentifiesExistentRegistryKey()
+        public void IdentifiesExistentRegistryKey()
         {
             proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
 

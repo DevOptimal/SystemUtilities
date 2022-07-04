@@ -62,11 +62,6 @@ namespace bradselw.System.Resources.Registry
                 throw new ArgumentException("name is not a valid reference to a value");
             }
 
-            if (name.Equals(defaultValueName, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new NotSupportedException("Cannot delete a registry key's default value.");
-            }
-
             registry[hive][view][subKey].Remove(name);
         }
 

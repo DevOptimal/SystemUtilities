@@ -14,13 +14,13 @@
         }
 
         [TestMethod]
-        public void CorrectlyIdentifiedNonexistentDirectories()
+        public void IdentifiedNonexistentDirectories()
         {
             Assert.IsFalse(proxy.DirectoryExists(path));
         }
 
         [TestMethod]
-        public void CorrectlyIdentifiedExistentDirectories()
+        public void IdentifiedExistentDirectories()
         {
             proxy.fileSystem[path] = null;
 
@@ -28,7 +28,7 @@
         }
 
         [TestMethod]
-        public void CorrectlyCreatesDirectory()
+        public void CreatesDirectory()
         {
             proxy.CreateDirectory(path);
 
@@ -37,7 +37,7 @@
         }
 
         [TestMethod]
-        public void CorrectlyDeletesDirectory()
+        public void DeletesDirectory()
         {
             proxy.fileSystem[path] = null;
 
