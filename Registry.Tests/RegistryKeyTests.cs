@@ -1,8 +1,10 @@
 using Microsoft.Win32;
+using System.Runtime.Versioning;
 
 namespace bradselw.System.Resources.Registry.Tests
 {
     [TestClass]
+    [SupportedOSPlatform("windows")]
     public class RegistryKeyTests
     {
         private MockRegistryProxy proxy;
@@ -28,10 +30,7 @@ namespace bradselw.System.Resources.Registry.Tests
         [TestMethod]
         public void CorrectlyIdentifiesExistentRegistryKey()
         {
-            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["(Default)"] = (null, RegistryValueKind.String)
-            };
+            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
 
             Assert.IsTrue(proxy.RegistryKeyExists(hive, view, subKey));
         }
@@ -44,17 +43,12 @@ namespace bradselw.System.Resources.Registry.Tests
             Assert.IsTrue(proxy.registry.ContainsKey(hive));
             Assert.IsTrue(proxy.registry[hive].ContainsKey(view));
             Assert.IsTrue(proxy.registry[hive][view].ContainsKey(subKey));
-            Assert.IsTrue(proxy.registry[hive][view][subKey].ContainsKey("(Default)"));
-            Assert.IsTrue(proxy.registry[hive][view][subKey].Count == 1);
         }
 
         [TestMethod]
         public void DeletesRegistryKey()
         {
-            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["(Default)"] = (null, RegistryValueKind.String)
-            };
+            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
 
             proxy.DeleteRegistryKey(hive, view, subKey, recursive: true);
 

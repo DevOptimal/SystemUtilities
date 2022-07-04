@@ -31,7 +31,7 @@ namespace bradselw.System.Resources.Registry
 
             if (!registry[hive][view].ContainsKey(subKey))
             {
-                registry[hive][view][subKey] = new ConcurrentDictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase) { ["(Default)"] = (string.Empty, RegistryValueKind.String) };
+                registry[hive][view][subKey] = new ConcurrentDictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
             }
         }
 

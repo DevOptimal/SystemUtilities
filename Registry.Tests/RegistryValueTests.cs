@@ -1,8 +1,10 @@
 ﻿using Microsoft.Win32;
+using System.Runtime.Versioning;
 
 namespace bradselw.System.Resources.Registry.Tests
 {
     [TestClass]
+    [SupportedOSPlatform("windows")]
     public class RegistryValueTests
     {
         private MockRegistryProxy proxy;
@@ -14,6 +16,8 @@ namespace bradselw.System.Resources.Registry.Tests
         private const string subKey = @"SOFTWARE\Microsoft\Windows";
 
         private const string name = "foo";
+
+        private const string defaultValueName = "(Default)";
 
         private const string expectedValue = "bar";
 
@@ -34,11 +38,27 @@ namespace bradselw.System.Resources.Registry.Tests
         }
 
         [TestMethod]
+        public void CorrectlyIdentifiesNonexistentDefaultRegistryValue()
+        {
+            Assert.IsFalse(proxy.RegistryValueExists(hive, view, subKey, null));
+            Assert.IsFalse(proxy.RegistryValueExists(hive, view, subKey, defaultValueName));
+        }
+
+        [TestMethod]
         public void CorrectlyIdentifiesExistentRegistryValue()
         {
             proxy.registry[hive][view][subKey][name] = (expectedValue, expectedKind);
 
             Assert.IsTrue(proxy.RegistryValueExists(hive, view, subKey, name));
+        }
+
+        [TestMethod]
+        public void CorrectlyIdentifiesExistentDefaultRegistryValue()
+        {
+            proxy.registry[hive][view][subKey][defaultValueName] = (expectedValue, expectedKind);
+
+            Assert.IsTrue(proxy.RegistryValueExists(hive, view, subKey, null));
+            Assert.IsTrue(proxy.RegistryValueExists(hive, view, subKey, defaultValueName));
         }
 
         [TestMethod]
