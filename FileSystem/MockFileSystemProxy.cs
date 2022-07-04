@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace bradselw.System.Resources.FileSystem
+namespace DevOptimal.System.Resources.FileSystem
 {
     public class MockFileSystemProxy : IFileSystemProxy
     {

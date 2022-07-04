@@ -1,4 +1,4 @@
-namespace bradselw.System.Resources.Environment.Tests
+namespace DevOptimal.System.Resources.Environment.Tests
 {
     [TestClass]
     public class EnvironmentVariableTests

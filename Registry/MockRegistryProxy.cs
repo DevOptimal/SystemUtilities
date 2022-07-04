@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace bradselw.System.Resources.Registry
+namespace DevOptimal.System.Resources.Registry
 {
     public class MockRegistryProxy : IRegistryProxy
     {

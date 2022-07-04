@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace bradselw.System.Resources.FileSystem
+namespace DevOptimal.System.Resources.FileSystem
 {
     public class MockFileStream : FileStream
     {

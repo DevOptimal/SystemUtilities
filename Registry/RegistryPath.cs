@@ -1,4 +1,4 @@
-﻿namespace bradselw.System.Resources.Registry
+﻿namespace DevOptimal.System.Resources.Registry
 {
     public static class RegistryPath
     {

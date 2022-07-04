@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace bradselw.System.Resources.FileSystem.Tests
+namespace DevOptimal.System.Resources.FileSystem.Tests
 {
     [TestClass]
     public class FileTests

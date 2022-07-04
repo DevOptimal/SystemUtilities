@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace bradselw.System.Resources.Environment
+namespace DevOptimal.System.Resources.Environment
 {
     public class DefaultEnvironmentProxy : IEnvironmentProxy
     {

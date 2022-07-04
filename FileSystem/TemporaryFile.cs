@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace bradselw.System.Resources.FileSystem
+namespace DevOptimal.System.Resources.FileSystem
 {
     public class TemporaryFile : IDisposable
     {
