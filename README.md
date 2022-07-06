@@ -1,4 +1,4 @@
-# System.Resources
+# SystemUtilities
 
 Libraries for interacting with system resources.
 

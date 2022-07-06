@@ -1,4 +1,4 @@
-﻿namespace DevOptimal.System.Resources.FileSystem.Tests
+﻿namespace DevOptimal.SystemUtilities.FileSystem.Tests
 {
     [TestClass]
     public class DirectoryTests

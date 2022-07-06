@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace DevOptimal.System.Resources.Registry
+namespace DevOptimal.SystemUtilities.Registry
 {
     public interface IRegistryProxy
     {

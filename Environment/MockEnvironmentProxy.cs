@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DevOptimal.System.Resources.Environment
+namespace DevOptimal.SystemUtilities.Environment
 {
     public class MockEnvironmentProxy : IEnvironmentProxy
     {

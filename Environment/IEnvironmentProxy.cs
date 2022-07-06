@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DevOptimal.System.Resources.Environment
+namespace DevOptimal.SystemUtilities.Environment
 {
     public interface IEnvironmentProxy
     {

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DevOptimal.System.Resources.Registry
+namespace DevOptimal.SystemUtilities.Registry
 {
     public class MockRegistryProxy : IRegistryProxy
     {

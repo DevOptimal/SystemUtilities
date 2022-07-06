@@ -1,7 +1,7 @@
 using Microsoft.Win32;
 using System.Runtime.Versioning;
 
-namespace DevOptimal.System.Resources.Registry.Tests
+namespace DevOptimal.SystemUtilities.Registry.Tests
 {
     [TestClass]
     [SupportedOSPlatform("windows")]

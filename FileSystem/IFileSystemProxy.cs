@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DevOptimal.System.Resources.FileSystem
+namespace DevOptimal.SystemUtilities.FileSystem
 {
     public interface IFileSystemProxy
     {

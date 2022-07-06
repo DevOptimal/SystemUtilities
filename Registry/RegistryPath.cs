@@ -1,4 +1,4 @@
-﻿namespace DevOptimal.System.Resources.Registry
+﻿namespace DevOptimal.SystemUtilities.Registry
 {
     public static class RegistryPath
     {

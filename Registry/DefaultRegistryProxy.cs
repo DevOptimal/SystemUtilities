@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace DevOptimal.System.Resources.Registry
+namespace DevOptimal.SystemUtilities.Registry
 {
     public class DefaultRegistryProxy : IRegistryProxy
     {
