@@ -6,31 +6,31 @@ using System.Linq;
 
 namespace DevOptimal.SystemUtilities.FileSystem
 {
-    public class MockFileSystemProxy : IFileSystemProxy
+    public class MockFileSystem : IFileSystem
     {
         internal readonly string id = Guid.NewGuid().ToString();
 
-        internal readonly IDictionary<string, byte[]> fileSystem;
+        internal readonly IDictionary<string, byte[]> data;
 
-        public MockFileSystemProxy()
+        public MockFileSystem()
         {
-            fileSystem = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+            data = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
         }
 
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
         {
             sourcePath = Path.GetFullPath(sourcePath);
 
-            if (!fileSystem.ContainsKey(sourcePath) || fileSystem[sourcePath] == null)
+            if (!data.ContainsKey(sourcePath) || data[sourcePath] == null)
             {
                 throw new FileNotFoundException();
             }
 
             destinationPath = Path.GetFullPath(destinationPath);
 
-            if (fileSystem.ContainsKey(destinationPath))
+            if (data.ContainsKey(destinationPath))
             {
-                if (fileSystem[destinationPath] == null)
+                if (data[destinationPath] == null)
                 {
                     throw new ArgumentException("destFileName specifies a directory.");
                 }
@@ -40,18 +40,18 @@ namespace DevOptimal.SystemUtilities.FileSystem
                 }
             }
 
-            fileSystem[destinationPath] = fileSystem[sourcePath].ToArray();
+            data[destinationPath] = data[sourcePath].ToArray();
         }
 
         public void CreateDirectory(string path)
         {
             path = Path.GetFullPath(path);
 
-            if (!fileSystem.ContainsKey(path))
+            if (!data.ContainsKey(path))
             {
-                fileSystem[path] = null;
+                data[path] = null;
             }
-            else if (fileSystem[path] != null)
+            else if (data[path] != null)
             {
                 throw new IOException("The path is a file.");
             }
@@ -61,11 +61,11 @@ namespace DevOptimal.SystemUtilities.FileSystem
         {
             path = Path.GetFullPath(path);
 
-            if (!fileSystem.ContainsKey(path))
+            if (!data.ContainsKey(path))
             {
-                fileSystem[path] = new byte[0];
+                data[path] = new byte[0];
             }
-            else if (fileSystem[path] == null)
+            else if (data[path] == null)
             {
                 throw new IOException("The path is a directory.");
             }
@@ -75,14 +75,14 @@ namespace DevOptimal.SystemUtilities.FileSystem
         {
             path = Path.GetFullPath(path);
 
-            if (fileSystem.ContainsKey(path))
+            if (data.ContainsKey(path))
             {
-                if (fileSystem[path] != null)
+                if (data[path] != null)
                 {
                     throw new IOException("A file with the same name and location specified by path exists.");
                 }
 
-                var children = fileSystem.Keys.Where(p => Path.GetDirectoryName(p).Equals(path, StringComparison.OrdinalIgnoreCase));
+                var children = data.Keys.Where(p => Path.GetDirectoryName(p).Equals(path, StringComparison.OrdinalIgnoreCase));
 
                 if (children.Any())
                 {
@@ -90,7 +90,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     {
                         foreach (var child in children)
                         {
-                            if (fileSystem[child] == null)
+                            if (data[child] == null)
                             {
                                 DeleteDirectory(child, recursive);
                             }
@@ -106,7 +106,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     }
                 }
 
-                fileSystem.Remove(path);
+                data.Remove(path);
             }
             else
             {
@@ -118,14 +118,14 @@ namespace DevOptimal.SystemUtilities.FileSystem
         {
             path = Path.GetFullPath(path);
 
-            if (fileSystem.ContainsKey(path))
+            if (data.ContainsKey(path))
             {
-                if (fileSystem[path] == null)
+                if (data[path] == null)
                 {
                     throw new UnauthorizedAccessException("path is a directory.");
                 }
 
-                fileSystem.Remove(path);
+                data.Remove(path);
             }
             else
             {
@@ -138,7 +138,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
             try
             {
                 path = Path.GetFullPath(path);
-                return fileSystem.ContainsKey(path) && fileSystem[path] == null;
+                return data.ContainsKey(path) && data[path] == null;
             }
             catch
             {
@@ -151,7 +151,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
             try
             {
                 path = Path.GetFullPath(path);
-                return fileSystem.ContainsKey(path) && fileSystem[path] != null;
+                return data.ContainsKey(path) && data[path] != null;
             }
             catch
             {
@@ -163,7 +163,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
         {
             path = Path.GetFullPath(path);
 
-            if (fileSystem.ContainsKey(path) && fileSystem[path] == null)
+            if (data.ContainsKey(path) && data[path] == null)
             {
                 throw new UnauthorizedAccessException("path specified a directory.");
             }

@@ -2,7 +2,7 @@
 
 namespace DevOptimal.SystemUtilities.FileSystem
 {
-    public class DefaultFileSystemProxy : IFileSystemProxy
+    public class DefaultFileSystem : IFileSystem
     {
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
         {

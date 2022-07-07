@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DevOptimal.SystemUtilities.Registry
 {
-    public class DefaultRegistryProxy : IRegistryProxy
+    public class DefaultRegistry : IRegistry
     {
         public void CreateRegistryKey(RegistryHive hive, RegistryView view, string subKey)
         {

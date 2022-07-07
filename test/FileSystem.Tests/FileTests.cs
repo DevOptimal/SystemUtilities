@@ -5,12 +5,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
     [TestClass]
     public class FileTests
     {
-        private MockFileSystemProxy proxy;
+        private MockFileSystem fileSystem;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            proxy = new MockFileSystemProxy();
+            fileSystem = new MockFileSystem();
         }
 
 
@@ -19,15 +19,15 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         {
             var path = @"C:\temp\foo.bar";
 
-            Assert.IsFalse(proxy.FileExists(path));
+            Assert.IsFalse(fileSystem.FileExists(path));
 
-            proxy.CreateFile(path);
+            fileSystem.CreateFile(path);
 
-            Assert.IsTrue(proxy.FileExists(path));
+            Assert.IsTrue(fileSystem.FileExists(path));
 
-            proxy.DeleteFile(path);
+            fileSystem.DeleteFile(path);
 
-            Assert.IsFalse(proxy.FileExists(path));
+            Assert.IsFalse(fileSystem.FileExists(path));
         }
 
         [TestMethod]
@@ -36,12 +36,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
 
-            using (var stream = proxy.OpenFile(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (var stream = fileSystem.OpenFile(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 stream.Write(expectedBytes);
             }
 
-            var actualBytes = proxy.fileSystem[path];
+            var actualBytes = fileSystem.data[path];
             CollectionAssert.AreEqual(expectedBytes, actualBytes);
         }
 
@@ -50,10 +50,10 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
-            proxy.fileSystem[path] = expectedBytes;
+            fileSystem.data[path] = expectedBytes;
 
             var actualBytes = new byte[expectedBytes.Length];
-            using (var stream = proxy.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
+            using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
             {
                 stream.Read(actualBytes, 0, expectedBytes.Length);
             }
@@ -66,7 +66,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
             var expectedBytes = Encoding.UTF8.GetBytes("testing");
-            proxy.fileSystem[path] = expectedBytes;
+            fileSystem.data[path] = expectedBytes;
 
             var tasks = new List<Task>();
             for (var i = 0; i < 10; i++)
@@ -74,7 +74,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
                 tasks.Add(Task.Factory.StartNew(() =>
                 {
                     var actualBytes = new byte[expectedBytes.Length];
-                    using (var stream = proxy.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         stream.Read(actualBytes, 0, expectedBytes.Length);
                     }

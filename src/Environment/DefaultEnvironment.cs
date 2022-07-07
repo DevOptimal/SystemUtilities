@@ -2,7 +2,7 @@
 
 namespace DevOptimal.SystemUtilities.Environment
 {
-    public class DefaultEnvironmentProxy : IEnvironmentProxy
+    public class DefaultEnvironment : IEnvironment
     {
         public string GetEnvironmentVariable(string name, EnvironmentVariableTarget target)
         {

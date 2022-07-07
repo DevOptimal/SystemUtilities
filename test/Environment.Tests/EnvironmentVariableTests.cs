@@ -3,7 +3,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
     [TestClass]
     public class EnvironmentVariableTests
     {
-        private MockEnvironmentProxy proxy;
+        private MockEnvironment environment;
 
         private const string name = "foo";
 
@@ -14,15 +14,15 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            proxy = new MockEnvironmentProxy();
+            environment = new MockEnvironment();
         }
 
         [TestMethod]
         public void GetsTheCorrectValue()
         {
-            proxy.environmentVariables[target][name] = expectedValue;
+            environment.data[target][name] = expectedValue;
 
-            var actualValue = proxy.GetEnvironmentVariable(name, target);
+            var actualValue = environment.GetEnvironmentVariable(name, target);
 
             Assert.AreEqual(expectedValue, actualValue);
         }
@@ -30,9 +30,9 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
         [TestMethod]
         public void SetsTheCorrectValue()
         {
-            proxy.SetEnvironmentVariable(name, expectedValue, target);
+            environment.SetEnvironmentVariable(name, expectedValue, target);
 
-            var actualValue = proxy.environmentVariables[target][name];
+            var actualValue = environment.data[target][name];
 
             Assert.AreEqual(expectedValue, actualValue);
         }
@@ -40,16 +40,16 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
         [TestMethod]
         public void SetsAVariableTwice()
         {
-            proxy.SetEnvironmentVariable(name, expectedValue, target);
+            environment.SetEnvironmentVariable(name, expectedValue, target);
 
-            var actualValue = proxy.environmentVariables[target][name];
+            var actualValue = environment.data[target][name];
 
             Assert.AreEqual(expectedValue, actualValue);
 
             var newValue = "baz";
-            proxy.SetEnvironmentVariable(name, newValue, target);
+            environment.SetEnvironmentVariable(name, newValue, target);
 
-            actualValue = proxy.environmentVariables[target][name];
+            actualValue = environment.data[target][name];
 
             Assert.AreEqual(newValue, actualValue);
         }
@@ -57,17 +57,17 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
         [TestMethod]
         public void SetToNullDeletesEnvironmentVariable()
         {
-            proxy.environmentVariables[target][name] = expectedValue;
+            environment.data[target][name] = expectedValue;
 
-            proxy.SetEnvironmentVariable(name, null, target);
+            environment.SetEnvironmentVariable(name, null, target);
 
-            Assert.IsFalse(proxy.environmentVariables[target].ContainsKey(name));
+            Assert.IsFalse(environment.data[target].ContainsKey(name));
         }
 
         [TestMethod]
         public void GetNonexistentValueReturnsNull()
         {
-            var actualValue = proxy.GetEnvironmentVariable(name, target);
+            var actualValue = environment.GetEnvironmentVariable(name, target);
 
             Assert.AreEqual(null, actualValue);
         }

@@ -17,13 +17,13 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         private readonly string temporaryFilePath;
 
-        private readonly MockFileSystemProxy fileSystemProxy;
+        private readonly MockFileSystem fileSystem;
 
-        public MockFileStream(MockFileSystemProxy fileSystemProxy, string path, FileMode mode, FileAccess access, FileShare share)
-            : this(GetTemporaryMockFile(path, fileSystemProxy), mode, access, share)
+        public MockFileStream(MockFileSystem fileSystem, string path, FileMode mode, FileAccess access, FileShare share)
+            : this(GetTemporaryMockFile(path, fileSystem), mode, access, share)
         {
             this.path = Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
-            this.fileSystemProxy = fileSystemProxy;
+            this.fileSystem = fileSystem;
         }
 
         private MockFileStream(string path, FileMode mode, FileAccess access, FileShare share)
@@ -43,7 +43,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
             {
                 base.Dispose(disposing);
 
-                fileSystemProxy.fileSystem[path] = File.ReadAllBytes(temporaryFilePath);
+                fileSystem.data[path] = File.ReadAllBytes(temporaryFilePath);
 
                 // Clean up the temporary file on disk once all references to that file are gone.
                 lock (fileReferenceCounter)
@@ -61,7 +61,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
         }
 
-        private static string GetTemporaryMockFile(string path, MockFileSystemProxy fileSystemProxy)
+        private static string GetTemporaryMockFile(string path, MockFileSystem fileSystem)
         {
             path = Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
 
@@ -71,7 +71,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                 hash = BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes(path.ToLower()))).Replace("-", string.Empty);
             }
 
-            var temporaryFilePath = Path.Combine(Path.GetTempPath(), string.Join(".", nameof(MockFileStream), fileSystemProxy.id, hash, "dat"));
+            var temporaryFilePath = Path.Combine(Path.GetTempPath(), string.Join(".", nameof(MockFileStream), fileSystem.id, hash, "dat"));
 
             lock (fileReferenceCounter)
             {
@@ -80,9 +80,9 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     fileReferenceCounter[temporaryFilePath] = 0;
                 }
 
-                if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystemProxy.FileExists(path))
+                if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystem.FileExists(path))
                 {
-                    File.WriteAllBytes(temporaryFilePath, fileSystemProxy.fileSystem[path]);
+                    File.WriteAllBytes(temporaryFilePath, fileSystem.data[path]);
                 }
 
                 fileReferenceCounter[temporaryFilePath]++;

@@ -7,7 +7,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
     [SupportedOSPlatform("windows")]
     public class RegistryKeyTests
     {
-        private MockRegistryProxy proxy;
+        private MockRegistry registry;
 
         private const RegistryHive hive = RegistryHive.LocalMachine;
 
@@ -18,41 +18,41 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            proxy = new MockRegistryProxy();
+            registry = new MockRegistry();
         }
 
         [TestMethod]
         public void IdentifiesNonexistentRegistryKey()
         {
-            Assert.IsFalse(proxy.RegistryKeyExists(hive, view, subKey));
+            Assert.IsFalse(registry.RegistryKeyExists(hive, view, subKey));
         }
 
         [TestMethod]
         public void IdentifiesExistentRegistryKey()
         {
-            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
 
-            Assert.IsTrue(proxy.RegistryKeyExists(hive, view, subKey));
+            Assert.IsTrue(registry.RegistryKeyExists(hive, view, subKey));
         }
 
         [TestMethod]
         public void CreatesNewRegistryKey()
         {
-            proxy.CreateRegistryKey(hive, view, subKey);
+            registry.CreateRegistryKey(hive, view, subKey);
 
-            Assert.IsTrue(proxy.registry.ContainsKey(hive));
-            Assert.IsTrue(proxy.registry[hive].ContainsKey(view));
-            Assert.IsTrue(proxy.registry[hive][view].ContainsKey(subKey));
+            Assert.IsTrue(registry.data.ContainsKey(hive));
+            Assert.IsTrue(registry.data[hive].ContainsKey(view));
+            Assert.IsTrue(registry.data[hive][view].ContainsKey(subKey));
         }
 
         [TestMethod]
         public void DeletesRegistryKey()
         {
-            proxy.registry[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
 
-            proxy.DeleteRegistryKey(hive, view, subKey, recursive: true);
+            registry.DeleteRegistryKey(hive, view, subKey, recursive: true);
 
-            Assert.IsFalse(proxy.registry[hive][view].ContainsKey(subKey));
+            Assert.IsFalse(registry.data[hive][view].ContainsKey(subKey));
         }
     }
 }

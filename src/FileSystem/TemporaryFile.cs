@@ -6,24 +6,24 @@ namespace DevOptimal.SystemUtilities.FileSystem
     {
         private bool disposedValue;
 
-        private readonly IFileSystemProxy fileSystemProxy;
+        private readonly IFileSystem fileSystem;
 
         public string Path { get; }
 
         public TemporaryFile()
-            : this(new DefaultFileSystemProxy())
+            : this(new DefaultFileSystem())
         {
         }
 
-        public TemporaryFile(IFileSystemProxy fileSystemProxy)
-            : this(GetUniqueTemporaryFileName(fileSystemProxy), fileSystemProxy)
+        public TemporaryFile(IFileSystem fileSystem)
+            : this(GetUniqueTemporaryFileName(fileSystem), fileSystem)
         {
         }
 
-        public TemporaryFile(string path, IFileSystemProxy fileSystemProxy)
+        public TemporaryFile(string path, IFileSystem fileSystem)
         {
             Path = global::System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
-            this.fileSystemProxy = fileSystemProxy ?? throw new ArgumentNullException(nameof(fileSystemProxy));
+            this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -35,9 +35,9 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     // TODO: dispose managed state (managed objects)
                 }
 
-                if (fileSystemProxy.FileExists(Path))
+                if (fileSystem.FileExists(Path))
                 {
-                    fileSystemProxy.DeleteFile(Path);
+                    fileSystem.DeleteFile(Path);
                 }
 
                 // TODO: set large fields to null
@@ -59,12 +59,12 @@ namespace DevOptimal.SystemUtilities.FileSystem
             GC.SuppressFinalize(this);
         }
 
-        private static string GetUniqueTemporaryFileName(IFileSystemProxy fileSystemProxy)
+        private static string GetUniqueTemporaryFileName(IFileSystem fileSystem)
         {
             var temporaryDirectory = global::System.IO.Path.GetTempPath();
-            if (!fileSystemProxy.DirectoryExists(temporaryDirectory))
+            if (!fileSystem.DirectoryExists(temporaryDirectory))
             {
-                fileSystemProxy.CreateDirectory(temporaryDirectory);
+                fileSystem.CreateDirectory(temporaryDirectory);
             }
 
             string path;
@@ -73,7 +73,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                 path = global::System.IO.Path.Combine(
                     temporaryDirectory,
                     global::System.IO.Path.GetRandomFileName());
-            } while (fileSystemProxy.FileExists(path));
+            } while (fileSystem.FileExists(path));
 
             return path;
         }

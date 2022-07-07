@@ -5,22 +5,22 @@ using System.Collections.Generic;
 
 namespace DevOptimal.SystemUtilities.Registry
 {
-    public class MockRegistryProxy : IRegistryProxy
+    public class MockRegistry : IRegistry
     {
         private const string defaultValueName = "(Default)";
 
-        internal readonly IDictionary<RegistryHive, IDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>> registry;
+        internal readonly IDictionary<RegistryHive, IDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>> data;
 
-        public MockRegistryProxy()
+        public MockRegistry()
         {
-            registry = new ConcurrentDictionary<RegistryHive, IDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>>();
+            data = new ConcurrentDictionary<RegistryHive, IDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>>();
             foreach (RegistryHive hive in Enum.GetValues(typeof(RegistryHive)))
             {
-                registry.Add(hive, new ConcurrentDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>());
+                data.Add(hive, new ConcurrentDictionary<RegistryView, IDictionary<string, IDictionary<string, (object, RegistryValueKind)>>>());
 
                 foreach (RegistryView view in Enum.GetValues(typeof(RegistryView)))
                 {
-                    registry[hive].Add(view, new ConcurrentDictionary<string, IDictionary<string, (object, RegistryValueKind)>>(StringComparer.OrdinalIgnoreCase));
+                    data[hive].Add(view, new ConcurrentDictionary<string, IDictionary<string, (object, RegistryValueKind)>>(StringComparer.OrdinalIgnoreCase));
                 }
             }
         }
@@ -29,9 +29,9 @@ namespace DevOptimal.SystemUtilities.Registry
         {
             subKey = RegistryPath.GetFullPath(subKey);
 
-            if (!registry[hive][view].ContainsKey(subKey))
+            if (!data[hive][view].ContainsKey(subKey))
             {
-                registry[hive][view][subKey] = new ConcurrentDictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
+                data[hive][view][subKey] = new ConcurrentDictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -39,12 +39,12 @@ namespace DevOptimal.SystemUtilities.Registry
         {
             subKey = RegistryPath.GetFullPath(subKey);
 
-            if (!registry[hive][view].ContainsKey(subKey))
+            if (!data[hive][view].ContainsKey(subKey))
             {
                 throw new ArgumentException("subkey does not specify a valid registry subkey.");
             }
 
-            registry[hive][view].Remove(subKey);
+            data[hive][view].Remove(subKey);
         }
 
         public void DeleteRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
@@ -52,17 +52,17 @@ namespace DevOptimal.SystemUtilities.Registry
             subKey = RegistryPath.GetFullPath(subKey);
             name = name ?? defaultValueName;
 
-            if (!registry[hive][view].ContainsKey(subKey))
+            if (!data[hive][view].ContainsKey(subKey))
             {
                 throw new ArgumentException("subkey does not specify a valid registry subkey.");
             }
 
-            if (!registry[hive][view][subKey].ContainsKey(name))
+            if (!data[hive][view][subKey].ContainsKey(name))
             {
                 throw new ArgumentException("name is not a valid reference to a value");
             }
 
-            registry[hive][view][subKey].Remove(name);
+            data[hive][view][subKey].Remove(name);
         }
 
         public (object value, RegistryValueKind kind) GetRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
@@ -70,24 +70,24 @@ namespace DevOptimal.SystemUtilities.Registry
             subKey = RegistryPath.GetFullPath(subKey);
             name = name ?? defaultValueName;
 
-            if (!registry[hive][view].ContainsKey(subKey))
+            if (!data[hive][view].ContainsKey(subKey))
             {
                 throw new ArgumentException("subkey does not specify a valid registry subkey.");
             }
 
-            if (!registry[hive][view][subKey].ContainsKey(name))
+            if (!data[hive][view][subKey].ContainsKey(name))
             {
                 throw new ArgumentException("name is not a valid reference to a value");
             }
 
-            return registry[hive][view][subKey][name];
+            return data[hive][view][subKey][name];
         }
 
         public bool RegistryKeyExists(RegistryHive hive, RegistryView view, string subKey)
         {
             subKey = RegistryPath.GetFullPath(subKey);
 
-            return registry[hive][view].ContainsKey(subKey);
+            return data[hive][view].ContainsKey(subKey);
         }
 
         public bool RegistryValueExists(RegistryHive hive, RegistryView view, string subKey, string name)
@@ -95,7 +95,7 @@ namespace DevOptimal.SystemUtilities.Registry
             subKey = RegistryPath.GetFullPath(subKey);
             name = name ?? defaultValueName;
 
-            return registry[hive][view].ContainsKey(subKey) && registry[hive][view][subKey].ContainsKey(name);
+            return data[hive][view].ContainsKey(subKey) && data[hive][view][subKey].ContainsKey(name);
         }
 
         public void SetRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name, object value, RegistryValueKind kind)
@@ -103,12 +103,12 @@ namespace DevOptimal.SystemUtilities.Registry
             subKey = RegistryPath.GetFullPath(subKey);
             name = name ?? defaultValueName;
 
-            if (!registry[hive][view].ContainsKey(subKey))
+            if (!data[hive][view].ContainsKey(subKey))
             {
                 throw new ArgumentException("subkey does not specify a valid registry subkey.");
             }
 
-            registry[hive][view][subKey][name] = (value, kind);
+            data[hive][view][subKey][name] = (value, kind);
         }
     }
 }

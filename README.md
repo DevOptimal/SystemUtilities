@@ -4,7 +4,8 @@
 
 ## Features
 
-- Proxy implementations for various types of system resources, such as environment variables, files, and registry keys.
+- Interfaces to respresent various types of system resources, such as environment variables, files, and registry keys.
+- Mock implementations of these system resources for testing.
 
 ## Documentation
 

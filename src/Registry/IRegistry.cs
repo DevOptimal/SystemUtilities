@@ -2,7 +2,7 @@
 
 namespace DevOptimal.SystemUtilities.Registry
 {
-    public interface IRegistryProxy
+    public interface IRegistry
     {
         void CreateRegistryKey(RegistryHive hive, RegistryView view, string subKey);
 

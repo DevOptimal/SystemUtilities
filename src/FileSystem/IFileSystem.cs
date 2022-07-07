@@ -2,7 +2,7 @@
 
 namespace DevOptimal.SystemUtilities.FileSystem
 {
-    public interface IFileSystemProxy
+    public interface IFileSystem
     {
         void CreateDirectory(string path);
 
