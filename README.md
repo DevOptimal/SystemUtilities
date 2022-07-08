@@ -1,15 +1,16 @@
 # DevOptimal.SystemUtilities
 
-![continuous integration](https://github.com/DevOptimal/SystemUtilities/actions/workflows/ci.yml/badge.svg)
+![Continuous Integration](https://github.com/DevOptimal/SystemUtilities/actions/workflows/ci.yml/badge.svg)
 
 ## Features
 
-- Interfaces to respresent various types of system resources, such as environment variables, files, and registry keys.
+- Simple abstraction: Easy-to-implement interfaces that respresent various types of system resources, such as environment variables, files, and registry keys.
 - Mock implementations of these system resources for testing.
+- Serialization-friendly
 
 ## Documentation
 
-Read the docs [here](docs\index.md).
+Read the docs [here](doc/index.md).
 
 ## Target Platforms
 
