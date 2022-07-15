@@ -22,7 +22,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public TemporaryFile(string path, IFileSystem fileSystem)
         {
-            Path = global::System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+            Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
             this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
@@ -61,7 +61,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         private static string GetUniqueTemporaryFileName(IFileSystem fileSystem)
         {
-            var temporaryDirectory = global::System.IO.Path.GetTempPath();
+            var temporaryDirectory = System.IO.Path.GetTempPath();
             if (!fileSystem.DirectoryExists(temporaryDirectory))
             {
                 fileSystem.CreateDirectory(temporaryDirectory);
@@ -70,9 +70,9 @@ namespace DevOptimal.SystemUtilities.FileSystem
             string path;
             do
             {
-                path = global::System.IO.Path.Combine(
+                path = System.IO.Path.Combine(
                     temporaryDirectory,
-                    global::System.IO.Path.GetRandomFileName());
+                    System.IO.Path.GetRandomFileName());
             } while (fileSystem.FileExists(path));
 
             return path;

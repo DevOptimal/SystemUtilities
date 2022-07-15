@@ -4,9 +4,10 @@
 
 ## Features
 
-- Simple abstraction: Easy-to-implement interfaces that respresent various types of system resources, such as environment variables, files, and registry keys.
-- Mock implementations of these system resources for testing.
-- Serialization-friendly
+- System resource abstractions
+    - Easily swap out the underlying implementations of common system resource operations (e.g. environment variables, files, and registry keys)
+    - Mock implementations of these system resources for testing
+    - Serialization-friendly
 
 ## Documentation
 
