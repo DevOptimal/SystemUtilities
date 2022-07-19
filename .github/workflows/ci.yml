@@ -5,7 +5,8 @@ on:
     branches:
     - 'main'
     paths-ignore:
-    - '.github/workflows/**'
+    - 'doc/**'
+    - 'CONTRIBUTING.md'
     - 'README.md'
 
 jobs:
@@ -30,7 +31,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --filter 'TestCategory != Bug & TestCategory != MissingFeature' --verbosity normal
     - name: Pack
       run: dotnet pack --configuration Release --no-build
     - name: Publish

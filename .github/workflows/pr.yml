@@ -23,6 +23,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --filter 'TestCategory != Bug & TestCategory != MissingFeature' --verbosity normal
     - name: Pack
       run: dotnet pack --no-build
