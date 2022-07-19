@@ -11,7 +11,7 @@
 
 ## Documentation
 
-Read the docs [here](doc/index.md).
+Read the docs [here](https://github.com/DevOptimal/SystemUtilities/blob/main/doc/index.md).
 
 ## Target Platforms
 
