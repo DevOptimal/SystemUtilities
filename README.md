@@ -1,6 +1,7 @@
 # DevOptimal.SystemUtilities
 
-![Continuous Integration](https://github.com/DevOptimal/SystemUtilities/actions/workflows/ci.yml/badge.svg)
+[![Continuous Integration](https://github.com/DevOptimal/SystemUtilities/actions/workflows/ci.yml/badge.svg)](https://github.com/DevOptimal/SystemUtilities/actions/workflows/ci.yml)
+[![NuGet package](https://img.shields.io/nuget/v/DevOptimal.SystemUtilities.Environment.svg)](https://nuget.org/packages/DevOptimal.SystemUtilities.Environment)
 
 ## Features
 
