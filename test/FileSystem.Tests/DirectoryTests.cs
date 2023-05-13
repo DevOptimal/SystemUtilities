@@ -1,11 +1,14 @@
-﻿namespace DevOptimal.SystemUtilities.FileSystem.Tests
+﻿using System;
+using System.IO;
+
+namespace DevOptimal.SystemUtilities.FileSystem.Tests
 {
     [TestClass]
     public class DirectoryTests
     {
         private MockFileSystem fileSystem;
 
-        private const string path = @"C:\foo\bar";
+        private const string path = @"C:\foo";
 
         [TestInitialize]
         public void TestInitialize()
@@ -44,6 +47,56 @@
             fileSystem.DeleteDirectory(path, recursive: true);
 
             Assert.IsFalse(fileSystem.data.ContainsKey(path));
+        }
+
+        [TestMethod]
+        public void GetsDirectoriesNonRecursively()
+        {
+            fileSystem.data[path] = null;
+            fileSystem.data[Path.Combine(path, "bar")] = null;
+            fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
+
+            Assert.AreEqual(1, fileSystem.GetDirectories(path, recursive: false).Length);
+        }
+
+        [TestMethod]
+        public void GetsDirectoriesRecursively()
+        {
+            fileSystem.data[path] = null;
+            fileSystem.data[Path.Combine(path, "bar")] = null;
+            fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
+
+            Assert.AreEqual(2, fileSystem.GetDirectories(path, recursive: true).Length);
+        }
+
+        [TestMethod]
+        public void GetsFilesNonRecursively()
+        {
+            fileSystem.data[path] = null;
+            fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
+            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
+
+            Assert.AreEqual(1, fileSystem.GetFiles(path, recursive: false).Length);
+        }
+
+        [TestMethod]
+        public void GetsFilesRecursively()
+        {
+            fileSystem.data[path] = null;
+            fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
+            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
+
+            Assert.AreEqual(2, fileSystem.GetFiles(path, recursive: true).Length);
+        }
+
+        [TestMethod]
+        public void CreatesDirectoriesRecursively()
+        {
+            fileSystem.CreateDirectory(@"C:\foo\bar");
+
+            Assert.IsTrue(fileSystem.DirectoryExists(@"C:"));
+            Assert.IsTrue(fileSystem.DirectoryExists(@"C:\foo"));
+            Assert.IsTrue(fileSystem.DirectoryExists(@"C:\foo\bar"));
         }
     }
 }

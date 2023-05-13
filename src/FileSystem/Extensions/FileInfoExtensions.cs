@@ -7,28 +7,44 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
     public static class FileInfoExtensions
     {
         public static DriveInfo GetDrive(this FileInfo file)
-            => new DriveInfo(Path.GetPathRoot(file.FullName));
+        {
+            return new DriveInfo(Path.GetPathRoot(file.FullName));
+        }
 
         public static FileStream Open(this FileInfo file, FileMode mode, IFileSystem fileSystem)
-            => Open(file, mode, FileAccess.ReadWrite, FileShare.None, fileSystem);
+        {
+            return Open(file, mode, FileAccess.ReadWrite, FileShare.None, fileSystem);
+        }
 
         public static FileStream Open(this FileInfo file, FileMode mode, FileAccess access, IFileSystem fileSystem)
-            => Open(file, mode, access, FileShare.None, fileSystem);
+        {
+            return Open(file, mode, access, FileShare.None, fileSystem);
+        }
 
         public static FileStream Open(this FileInfo file, FileMode mode, FileAccess access, FileShare share, IFileSystem fileSystem)
-            => fileSystem.OpenFile(file.FullName, mode, access, share);
+        {
+            return fileSystem.OpenFile(file.FullName, mode, access, share);
+        }
 
         public static FileStream OpenRead(this FileInfo file, IFileSystem fileSystem)
-            => fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+        {
+            return fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+        }
 
         public static StreamReader OpenText(this FileInfo file, IFileSystem fileSystem)
-            => new StreamReader(fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read));
+        {
+            return new StreamReader(fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read));
+        }
 
         public static FileStream OpenWrite(this FileInfo file, IFileSystem fileSystem)
-            => fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+        {
+            return fileSystem.OpenFile(file.FullName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+        }
 
         public static byte[] ReadAllBytes(this FileInfo file)
-            => File.ReadAllBytes(file.FullName);
+        {
+            return File.ReadAllBytes(file.FullName);
+        }
 
         public static byte[] ReadAllBytes(this FileInfo file, IFileSystem fileSystem)
         {
@@ -41,7 +57,9 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         }
 
         public static string[] ReadAllLines(this FileInfo file)
-            => File.ReadAllLines(file.FullName);
+        {
+            return File.ReadAllLines(file.FullName);
+        }
 
         public static string[] ReadAllLines(this FileInfo file, IFileSystem fileSystem)
         {
@@ -59,7 +77,9 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         }
 
         public static string[] ReadAllLines(this FileInfo file, Encoding encoding)
-            => File.ReadAllLines(file.FullName, encoding);
+        {
+            return File.ReadAllLines(file.FullName, encoding);
+        }
 
         public static string[] ReadAllLines(this FileInfo file, Encoding encoding, IFileSystem fileSystem)
         {
@@ -77,7 +97,9 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         }
 
         public static string ReadAllText(this FileInfo file)
-            => File.ReadAllText(file.FullName);
+        {
+            return File.ReadAllText(file.FullName);
+        }
 
         public static string ReadAllText(this FileInfo file, IFileSystem fileSystem)
         {
@@ -89,7 +111,9 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         }
 
         public static string ReadAllText(this FileInfo file, Encoding encoding)
-            => File.ReadAllText(file.FullName, encoding);
+        {
+            return File.ReadAllText(file.FullName, encoding);
+        }
 
         public static string ReadAllText(this FileInfo file, Encoding encoding, IFileSystem fileSystem)
         {
@@ -101,24 +125,38 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         }
 
         public static void WriteAllBytes(this FileInfo file, byte[] bytes)
-            => File.WriteAllBytes(file.FullName, bytes);
+        {
+            File.WriteAllBytes(file.FullName, bytes);
+        }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines)
-            => File.WriteAllLines(file.FullName, lines);
+        {
+            File.WriteAllLines(file.FullName, lines);
+        }
 
         public static void WriteAllLines(this FileInfo file, string[] lines)
-            => File.WriteAllLines(file.FullName, lines);
+        {
+            File.WriteAllLines(file.FullName, lines);
+        }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines, Encoding encoding)
-            => File.WriteAllLines(file.FullName, lines, encoding);
+        {
+            File.WriteAllLines(file.FullName, lines, encoding);
+        }
 
         public static void WriteAllLines(this FileInfo file, string[] lines, Encoding encoding)
-            => File.WriteAllLines(file.FullName, lines, encoding);
+        {
+            File.WriteAllLines(file.FullName, lines, encoding);
+        }
 
         public static void WriteAllText(this FileInfo file, string contents)
-            => File.WriteAllText(file.FullName, contents);
+        {
+            File.WriteAllText(file.FullName, contents);
+        }
 
         public static void WriteAllText(this FileInfo file, string contents, Encoding encoding)
-            => File.WriteAllText(file.FullName, contents, encoding);
+        {
+            File.WriteAllText(file.FullName, contents, encoding);
+        }
     }
 }
