@@ -39,6 +39,16 @@ namespace DevOptimal.SystemUtilities.FileSystem
             return File.Exists(path);
         }
 
+        public string[] GetDirectories(string path, bool recursive)
+        {
+            return Directory.GetDirectories(path, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
+
+        public string[] GetFiles(string path, bool recursive)
+        {
+            return Directory.GetFiles(path, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
+
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
         {
             return File.Open(path, mode, access, share);

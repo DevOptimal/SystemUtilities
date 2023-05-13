@@ -1,3 +1,5 @@
+using System;
+
 namespace DevOptimal.SystemUtilities.Environment.Tests
 {
     [TestClass]

@@ -45,16 +45,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public void CreateDirectory(string path)
         {
-            path = Path.GetFullPath(path);
-
-            if (!data.ContainsKey(path))
-            {
-                data[path] = null;
-            }
-            else if (data[path] != null)
-            {
-                throw new IOException("The path is a file.");
-            }
+            CreateDirectoryRecurse(path);
         }
 
         public void CreateFile(string path)
@@ -63,6 +54,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
             if (!data.ContainsKey(path))
             {
+                CreateDirectoryRecurse(Path.GetDirectoryName(path));
                 data[path] = new byte[0];
             }
             else if (data[path] == null)
@@ -159,6 +151,16 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
         }
 
+        public string[] GetDirectories(string path, bool recursive)
+        {
+            return GetFileSystemEntries(path, recursive, includeDirectories: true, includeFiles: false);
+        }
+
+        public string[] GetFiles(string path, bool recursive)
+        {
+            return GetFileSystemEntries(path, recursive, includeDirectories: false, includeFiles: true);
+        }
+
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
         {
             path = Path.GetFullPath(path);
@@ -169,6 +171,62 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
 
             return new MockFileStream(this, path, mode, access, share);
+        }
+
+        private void CreateDirectoryRecurse(string path)
+        {
+            CreateDirectoryRecurse(Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        private void CreateDirectoryRecurse(string[] pathParts)
+        {
+            if (pathParts.Length > 0)
+            {
+                CreateDirectoryRecurse(pathParts.Take(pathParts.Length - 1).ToArray());
+
+                var path = Path.GetFullPath(Path.Combine(pathParts));
+
+                if (data.ContainsKey(path) && data[path] != null)
+                {
+                    throw new IOException("The path is a file.");
+                }
+
+                data[path] = null;
+            }
+        }
+
+        private string[] GetFileSystemEntries(string ancestorPath, bool recursive, bool includeDirectories, bool includeFiles)
+        {
+            var ancestorPathParts = Path.GetFullPath(ancestorPath).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            var result = new List<string>();
+            foreach (var path in data.Keys)
+            {
+                if (includeDirectories == (data[path] == null) || includeFiles == (data[path] != null))
+                {
+                    var pathParts = Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (pathParts.Length > ancestorPathParts.Length && (recursive || pathParts.Length == ancestorPathParts.Length + 1))
+                    {
+                        var match = true;
+                        for (var i = 0; i < ancestorPathParts.Length; i++)
+                        {
+                            if (!ancestorPathParts[i].Equals(pathParts[i], StringComparison.OrdinalIgnoreCase))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+
+                        if (match)
+                        {
+                            result.Add(path);
+                        }
+                    }
+                }
+            }
+
+            return result.ToArray();
         }
     }
 }
