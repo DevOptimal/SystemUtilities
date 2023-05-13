@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DevOptimal.SystemUtilities.FileSystem
 {
@@ -11,6 +12,12 @@ namespace DevOptimal.SystemUtilities.FileSystem
         internal readonly string id = Guid.NewGuid().ToString();
 
         internal readonly IDictionary<string, byte[]> data;
+
+        private readonly static Regex[] invalidSearchPatternRegexes = Path.GetInvalidPathChars()
+            .Select(c => Regex.Escape(c.ToString()))
+            .Concat(new[] { $@"\.\.{Regex.Escape(Path.DirectorySeparatorChar.ToString())}", $@"\.\.{Regex.Escape(Path.AltDirectorySeparatorChar.ToString())}", @"\.\.$" })
+            .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))
+            .ToArray();
 
         public MockFileSystem()
         {
@@ -151,14 +158,14 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
         }
 
-        public string[] GetDirectories(string path, bool recursive)
+        public string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
         {
-            return GetFileSystemEntries(path, recursive, includeDirectories: true, includeFiles: false);
+            return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: true, includeFiles: false);
         }
 
-        public string[] GetFiles(string path, bool recursive)
+        public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
-            return GetFileSystemEntries(path, recursive, includeDirectories: false, includeFiles: true);
+            return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: false, includeFiles: true);
         }
 
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
@@ -195,8 +202,9 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
         }
 
-        private string[] GetFileSystemEntries(string ancestorPath, bool recursive, bool includeDirectories, bool includeFiles)
+        private string[] GetFileSystemEntries(string ancestorPath, string searchPattern, SearchOption searchOption, bool includeDirectories, bool includeFiles)
         {
+            var searchPatternRegex = GetSearchPatternRegex(searchPattern);
             var ancestorPathParts = Path.GetFullPath(ancestorPath).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = new List<string>();
@@ -206,7 +214,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                 {
                     var pathParts = Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (pathParts.Length > ancestorPathParts.Length && (recursive || pathParts.Length == ancestorPathParts.Length + 1))
+                    if (pathParts.Length > ancestorPathParts.Length && (searchOption == SearchOption.AllDirectories || pathParts.Length == ancestorPathParts.Length + 1))
                     {
                         var match = true;
                         for (var i = 0; i < ancestorPathParts.Length; i++)
@@ -218,7 +226,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                             }
                         }
 
-                        if (match)
+                        if (match && searchPatternRegex.IsMatch(string.Join(Path.DirectorySeparatorChar.ToString(), pathParts.Skip(ancestorPathParts.Length))))
                         {
                             result.Add(path);
                         }
@@ -227,6 +235,19 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
 
             return result.ToArray();
+        }
+
+        private Regex GetSearchPatternRegex(string searchPattern)
+        {
+            foreach (var invalidSearchPatternRegex in invalidSearchPatternRegexes)
+            {
+                if (invalidSearchPatternRegex.IsMatch(searchPattern))
+                {
+                    throw new ArgumentException("Search pattern is invalid", nameof(searchPattern));
+                }
+            }
+
+            return new Regex($"^{Regex.Escape(searchPattern.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)).Replace(@"\*", ".*").Replace(@"\?", ".")}$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
     }
 }
