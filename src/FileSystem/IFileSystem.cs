@@ -18,9 +18,9 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         bool FileExists(string path);
 
-        string[] GetDirectories(string path, bool recursive);
+        string[] GetDirectories(string path, string searchPattern, SearchOption searchOption);
 
-        string[] GetFiles(string path, bool recursive);
+        string[] GetFiles(string path, string searchPattern, SearchOption searchOption);
 
         FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share);
     }
