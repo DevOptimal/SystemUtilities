@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace DevOptimal.SystemUtilities.FileSystem
@@ -21,7 +22,18 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public MockFileSystem()
         {
-            data = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                data = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                data = new ConcurrentDictionary<string, byte[]>(StringComparer.Ordinal);
+            }
+            else
+            {
+                throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+            }
         }
 
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
@@ -81,7 +93,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     throw new IOException("A file with the same name and location specified by path exists.");
                 }
 
-                var children = data.Keys.Where(p => Path.GetDirectoryName(p).Equals(path, StringComparison.OrdinalIgnoreCase));
+                var children = GetDirectories(path, "*", SearchOption.TopDirectoryOnly);
 
                 if (children.Any())
                 {
