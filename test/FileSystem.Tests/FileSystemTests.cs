@@ -1,14 +1,15 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Tests
 {
     [TestClass]
-    public class DirectoryTests
+    public class FileSystemTests
     {
         private MockFileSystem fileSystem;
-
-        private const string path = @"C:\foo";
 
         [TestInitialize]
         public void TestInitialize()
@@ -16,23 +17,100 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem = new MockFileSystem();
         }
 
+
         [TestMethod]
-        public void IdentifiedNonexistentDirectories()
+        public void IdentifiesExistentAndNonexistentFiles()
         {
-            Assert.IsFalse(fileSystem.DirectoryExists(path));
+            var path = @"C:\temp\foo.bar";
+
+            Assert.IsFalse(fileSystem.FileExists(path));
+
+            fileSystem.CreateFile(path);
+
+            Assert.IsTrue(fileSystem.FileExists(path));
+
+            fileSystem.DeleteFile(path);
+
+            Assert.IsFalse(fileSystem.FileExists(path));
         }
 
         [TestMethod]
-        public void IdentifiedExistentDirectories()
+        public void WritesFile()
         {
-            fileSystem.data[path] = null;
+            var path = Path.GetFullPath(@"C:\temp\foo.bar");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+
+            using (var stream = fileSystem.OpenFile(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(expectedBytes);
+            }
+
+            var actualBytes = fileSystem.data[path];
+            CollectionAssert.AreEqual(expectedBytes, actualBytes);
+        }
+
+        [TestMethod]
+        public void ReadsFile()
+        {
+            var path = Path.GetFullPath(@"C:\temp\foo.bar");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+            fileSystem.data[path] = expectedBytes;
+
+            var actualBytes = new byte[expectedBytes.Length];
+            using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                stream.Read(actualBytes, 0, expectedBytes.Length);
+            }
+
+            CollectionAssert.AreEqual(expectedBytes, actualBytes);
+        }
+
+        [TestMethod]
+        public void ConcurrentReads()
+        {
+            var path = Path.GetFullPath(@"C:\temp\foo.bar");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+            fileSystem.data[path] = expectedBytes;
+
+            var tasks = new List<Task>();
+            for (var i = 0; i < 10; i++)
+            {
+                tasks.Add(Task.Factory.StartNew(() =>
+                {
+                    var actualBytes = new byte[expectedBytes.Length];
+                    using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        stream.Read(actualBytes, 0, expectedBytes.Length);
+                    }
+
+                    CollectionAssert.AreEqual(expectedBytes, actualBytes);
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+        }
+
+        [TestMethod]
+        public void IdentifiesExistentAndNonexistentDirectories()
+        {
+            var path = @"C:\temp\foo";
+
+            Assert.IsFalse(fileSystem.DirectoryExists(path));
+
+            fileSystem.CreateDirectory(path);
 
             Assert.IsTrue(fileSystem.DirectoryExists(path));
+
+            fileSystem.DeleteDirectory(path, recursive: false);
+
+            Assert.IsFalse(fileSystem.DirectoryExists(path));
         }
 
         [TestMethod]
         public void CreatesDirectory()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.CreateDirectory(path);
 
             Assert.IsTrue(fileSystem.data.ContainsKey(path));
@@ -42,6 +120,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         [TestMethod]
         public void DeletesDirectory()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.data[path] = null;
 
             fileSystem.DeleteDirectory(path, recursive: true);
@@ -52,6 +132,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         [TestMethod]
         public void GetsDirectoriesNonRecursively()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.data[path] = null;
             fileSystem.data[Path.Combine(path, "bar")] = null;
             fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
@@ -62,6 +144,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         [TestMethod]
         public void GetsDirectoriesRecursively()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.data[path] = null;
             fileSystem.data[Path.Combine(path, "bar")] = null;
             fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
@@ -72,6 +156,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         [TestMethod]
         public void GetsFilesNonRecursively()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.data[path] = null;
             fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
             fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
@@ -82,6 +168,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         [TestMethod]
         public void GetsFilesRecursively()
         {
+            var path = @"C:\temp\foo";
+
             fileSystem.data[path] = null;
             fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
             fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
