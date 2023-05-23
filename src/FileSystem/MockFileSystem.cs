@@ -93,12 +93,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
                     throw new IOException("A file with the same name and location specified by path exists.");
                 }
 
-                var children = data.Keys.Where(p =>
-                {
-                    Console.WriteLine($"{nameof(p)}: {p}");
-                    Console.WriteLine($"{nameof(path)}: {path}");
-                    return Path.GetDirectoryName(p).Equals(path, StringComparison.OrdinalIgnoreCase);
-                }).ToList();
+                var children = GetDirectories(path, "*", SearchOption.TopDirectoryOnly);
 
                 if (children.Any())
                 {
