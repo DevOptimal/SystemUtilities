@@ -15,7 +15,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return x.FullName.Equals(y.FullName);
+                return x.FullName.Equals(y.FullName, StringComparison.Ordinal);
             }
             else
             {

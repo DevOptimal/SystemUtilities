@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DevOptimal.SystemUtilities.FileSystem.Tests
 {
     [TestClass]
-    public class FileSystemTests
+    public class MockFileSystemTests
     {
         private MockFileSystem fileSystem;
 
