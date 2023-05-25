@@ -9,7 +9,15 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
     {
         public bool Equals(FileSystemInfo x, FileSystemInfo y)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (x == y)
+            {
+                return true;
+            }
+            else if (x == null || y == null)
+            {
+                return false;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return x.FullName.Equals(y.FullName, StringComparison.OrdinalIgnoreCase);
             }
@@ -25,7 +33,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
 
         public int GetHashCode(FileSystemInfo obj)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (obj == null)
+            {
+                return 0;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return obj.FullName.ToLower().GetHashCode();
             }
