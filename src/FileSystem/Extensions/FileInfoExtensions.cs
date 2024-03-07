@@ -6,6 +6,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 {
     public static class FileInfoExtensions
     {
+        public static bool Equals(this FileInfo a, FileInfo b, IEqualityComparer<FileInfo> comparer)
+        {
+            return comparer.Equals(a, b);
+        }
+
         public static DriveInfo GetDrive(this FileInfo file)
         {
             return new DriveInfo(Path.GetPathRoot(file.FullName));
