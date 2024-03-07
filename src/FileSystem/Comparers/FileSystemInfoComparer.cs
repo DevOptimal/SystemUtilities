@@ -7,48 +7,42 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
 {
     public class FileSystemInfoComparer : IEqualityComparer<FileSystemInfo>
     {
-        public bool Equals(FileSystemInfo x, FileSystemInfo y)
+        public static IEqualityComparer<FileSystemInfo> Default => new FileSystemInfoComparer();
+
+        public static IEqualityComparer<FileSystemInfo> Linux => new LinuxFileSystemInfoComparer();
+
+        public static IEqualityComparer<FileSystemInfo> OSX => new OSXFileSystemInfoComparer();
+
+        public static IEqualityComparer<FileSystemInfo> Windows => new WindowsFileSystemInfoComparer();
+
+        private readonly Lazy<IEqualityComparer<FileSystemInfo>> comparerLazy = new Lazy<IEqualityComparer<FileSystemInfo>>(() =>
         {
-            if (x == y)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return true;
+                return new LinuxFileSystemInfoComparer();
             }
-            else if (x == null || y == null)
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return false;
+                return new WindowsFileSystemInfoComparer();
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return x.FullName.Equals(y.FullName, StringComparison.OrdinalIgnoreCase);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return x.FullName.Equals(y.FullName, StringComparison.Ordinal);
+                return new OSXFileSystemInfoComparer();
             }
             else
             {
                 throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
             }
+        });
+
+        public bool Equals(FileSystemInfo x, FileSystemInfo y)
+        {
+            return comparerLazy.Value.Equals(x, y);
         }
 
         public int GetHashCode(FileSystemInfo obj)
         {
-            if (obj == null)
-            {
-                return 0;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return obj.FullName.ToLower().GetHashCode();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return obj.FullName.GetHashCode();
-            }
-            else
-            {
-                throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
-            }
+            return comparerLazy.Value.GetHashCode(obj);
         }
     }
 }
