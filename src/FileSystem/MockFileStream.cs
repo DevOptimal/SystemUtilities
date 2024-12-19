@@ -42,7 +42,19 @@ namespace DevOptimal.SystemUtilities.FileSystem
             {
                 base.Dispose(disposing);
 
-                fileSystem.data[path] = File.ReadAllBytes(temporaryFilePath);
+                lock (fileReferenceCounter)
+                {
+                    var bytes = File.ReadAllBytes(temporaryFilePath);
+                    if (fileSystem.data.ContainsKey(path))
+                    {
+                        fileSystem.data[path].Clear();
+                        fileSystem.data[path].AddRange(bytes);
+                    }
+                    else
+                    {
+                        fileSystem.data[path] = new List<byte>(bytes);
+                    }
+                }
 
                 // Clean up the temporary file on disk once all references to that file are gone.
                 lock (fileReferenceCounter)
@@ -81,7 +93,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
                 if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystem.FileExists(path))
                 {
-                    File.WriteAllBytes(temporaryFilePath, fileSystem.data[path]);
+                    File.WriteAllBytes(temporaryFilePath, fileSystem.data[path].ToArray());
                 }
 
                 fileReferenceCounter[temporaryFilePath]++;

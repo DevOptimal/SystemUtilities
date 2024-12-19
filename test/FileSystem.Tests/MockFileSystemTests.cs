@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,13 +54,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         public void ReadsFile()
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
-            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing").ToList();
             fileSystem.data[path] = expectedBytes;
 
-            var actualBytes = new byte[expectedBytes.Length];
+            var actualBytes = new byte[expectedBytes.Count];
             using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
             {
-                stream.Read(actualBytes, 0, expectedBytes.Length);
+                stream.Read(actualBytes, 0, expectedBytes.Count);
             }
 
             CollectionAssert.AreEqual(expectedBytes, actualBytes);
@@ -69,7 +70,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         public void ConcurrentReads()
         {
             var path = Path.GetFullPath(@"C:\temp\foo.bar");
-            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+            var expectedBytes = Encoding.UTF8.GetBytes("testing").ToList();
             fileSystem.data[path] = expectedBytes;
 
             var tasks = new List<Task>();
@@ -77,17 +78,17 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             {
                 tasks.Add(Task.Factory.StartNew(() =>
                 {
-                    var actualBytes = new byte[expectedBytes.Length];
+                    var actualBytes = new byte[expectedBytes.Count];
                     using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        stream.Read(actualBytes, 0, expectedBytes.Length);
+                        stream.Read(actualBytes, 0, expectedBytes.Count);
                     }
 
                     CollectionAssert.AreEqual(expectedBytes, actualBytes);
                 }));
             }
 
-            Task.WaitAll(tasks.ToArray());
+            Task.WaitAll([.. tasks]);
         }
 
         [TestMethod]
@@ -159,8 +160,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             var path = @"C:\temp\foo";
 
             fileSystem.data[path] = null;
-            fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
-            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
+            fileSystem.data[Path.Combine(path, "bar.txt")] = [];
+            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = [];
 
             Assert.AreEqual(1, fileSystem.GetFiles(path, "*", SearchOption.TopDirectoryOnly).Length);
         }
@@ -171,8 +172,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             var path = @"C:\temp\foo";
 
             fileSystem.data[path] = null;
-            fileSystem.data[Path.Combine(path, "bar.txt")] = Array.Empty<byte>();
-            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = Array.Empty<byte>();
+            fileSystem.data[Path.Combine(path, "bar.txt")] = [];
+            fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = [];
 
             Assert.AreEqual(2, fileSystem.GetFiles(path, "*", SearchOption.AllDirectories).Length);
         }
@@ -217,6 +218,30 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.CreateDirectory(@"C:\foo\bar");
 
             _ = fileSystem.GetDirectories(@"C:\foo", "*bar|", SearchOption.AllDirectories);
+        }
+
+        [TestMethod]
+        public void HardLinksFileCorrectly()
+        {
+            var expectedBytes = Encoding.UTF8.GetBytes("testing");
+
+            var sourcePath = Path.GetFullPath(@"C:\temp\foo.txt");
+            using (var stream = fileSystem.OpenFile(sourcePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(expectedBytes);
+            }
+            CollectionAssert.AreEqual(expectedBytes, fileSystem.data[sourcePath]);
+
+            var destinationPath = Path.GetFullPath(@"C:\temp\bar.txt");
+            fileSystem.HardLinkFile(sourcePath, destinationPath, false);
+            CollectionAssert.AreEqual(expectedBytes, fileSystem.data[destinationPath]);
+
+            expectedBytes = Encoding.UTF8.GetBytes("newtesting");
+            using (var stream = fileSystem.OpenFile(sourcePath, FileMode.Open, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(expectedBytes);
+            }
+            CollectionAssert.AreEqual(expectedBytes, fileSystem.data[destinationPath]);
         }
     }
 }
