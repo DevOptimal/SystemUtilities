@@ -12,7 +12,11 @@ namespace DevOptimal.SystemUtilities.FileSystem
     {
         internal readonly string id = Guid.NewGuid().ToString();
 
-        internal readonly IDictionary<string, byte[]> data;
+        /// <summary>
+        /// Represents the file system as a mapping of file name to list of bytes. If the list of bytes is null, the entry is a directory,
+        /// otherwise it contains the contents of the file.
+        /// </summary>
+        internal readonly IDictionary<string, List<byte>> data;
 
         private readonly static Regex[] invalidSearchPatternRegexes = Path.GetInvalidPathChars()
             .Select(c => Regex.Escape(c.ToString()))
@@ -24,11 +28,11 @@ namespace DevOptimal.SystemUtilities.FileSystem
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                data = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+                data = new ConcurrentDictionary<string, List<byte>>(StringComparer.OrdinalIgnoreCase);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                data = new ConcurrentDictionary<string, byte[]>(StringComparer.Ordinal);
+                data = new ConcurrentDictionary<string, List<byte>>(StringComparer.Ordinal);
             }
             else
             {
@@ -38,20 +42,20 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
         {
+            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
             sourcePath = Path.GetFullPath(sourcePath);
-
             if (!data.ContainsKey(sourcePath) || data[sourcePath] == null)
             {
                 throw new FileNotFoundException();
             }
 
+            if (destinationPath == null) throw new ArgumentNullException(nameof(destinationPath));
             destinationPath = Path.GetFullPath(destinationPath);
-
             if (data.ContainsKey(destinationPath))
             {
                 if (data[destinationPath] == null)
                 {
-                    throw new ArgumentException("destFileName specifies a directory.");
+                    throw new ArgumentException($"{nameof(destinationPath)} specifies a directory.");
                 }
                 else if (!overwrite)
                 {
@@ -59,22 +63,25 @@ namespace DevOptimal.SystemUtilities.FileSystem
                 }
             }
 
-            data[destinationPath] = data[sourcePath].ToArray();
+            data[destinationPath] = data[sourcePath].ToList();
         }
 
         public void CreateDirectory(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             CreateDirectoryRecurse(path);
         }
 
         public void CreateFile(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
             path = Path.GetFullPath(path);
 
             if (!data.ContainsKey(path))
             {
                 CreateDirectoryRecurse(Path.GetDirectoryName(path));
-                data[path] = new byte[0];
+                data[path] = new List<byte>();
             }
             else if (data[path] == null)
             {
@@ -84,64 +91,53 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public void DeleteDirectory(string path, bool recursive)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
             path = Path.GetFullPath(path);
-
-            if (data.ContainsKey(path))
+            if (!data.ContainsKey(path)) throw new DirectoryNotFoundException();
+            if (data[path] != null)
             {
-                if (data[path] != null)
-                {
-                    throw new IOException("A file with the same name and location specified by path exists.");
-                }
+                throw new IOException("A file with the same name and location specified by path exists.");
+            }
 
-                var children = GetDirectories(path, "*", SearchOption.TopDirectoryOnly);
+            var children = GetDirectories(path, "*", SearchOption.TopDirectoryOnly);
 
-                if (children.Any())
+            if (children.Any())
+            {
+                if (recursive)
                 {
-                    if (recursive)
+                    foreach (var child in children)
                     {
-                        foreach (var child in children)
+                        if (data[child] == null)
                         {
-                            if (data[child] == null)
-                            {
-                                DeleteDirectory(child, recursive);
-                            }
-                            else
-                            {
-                                DeleteFile(child);
-                            }
+                            DeleteDirectory(child, recursive);
+                        }
+                        else
+                        {
+                            DeleteFile(child);
                         }
                     }
-                    else
-                    {
-                        throw new IOException("The directory specified by path is not empty.");
-                    }
                 }
+                else
+                {
+                    throw new IOException("The directory specified by path is not empty.");
+                }
+            }
 
-                data.Remove(path);
-            }
-            else
-            {
-                throw new DirectoryNotFoundException();
-            }
+            data.Remove(path);
         }
 
         public void DeleteFile(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
             path = Path.GetFullPath(path);
+            if (!data.ContainsKey(path)) throw new FileNotFoundException();
 
-            if (data.ContainsKey(path))
+            if (data[path] == null)
             {
-                if (data[path] == null)
-                {
-                    throw new UnauthorizedAccessException("path is a directory.");
-                }
+                throw new UnauthorizedAccessException("path is a directory.");
+            }
 
-                data.Remove(path);
-            }
-            else
-            {
-                throw new FileNotFoundException();
-            }
+            data.Remove(path);
         }
 
         public bool DirectoryExists(string path)
@@ -172,16 +168,74 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            if (searchPattern == null) throw new ArgumentNullException(nameof(searchPattern));
             return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: true, includeFiles: false);
         }
 
         public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            if (searchPattern == null) throw new ArgumentNullException(nameof(searchPattern));
             return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: false, includeFiles: true);
+        }
+
+        public void HardLinkFile(string sourcePath, string destinationPath, bool overwrite)
+        {
+            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
+            sourcePath = Path.GetFullPath(sourcePath);
+            if (!data.ContainsKey(sourcePath) || data[sourcePath] == null)
+            {
+                throw new FileNotFoundException();
+            }
+
+            if (destinationPath == null) throw new ArgumentNullException(nameof(destinationPath));
+            destinationPath = Path.GetFullPath(destinationPath);
+            if (data.ContainsKey(destinationPath))
+            {
+                if (data[destinationPath] == null)
+                {
+                    throw new ArgumentException($"{nameof(destinationPath)} specifies a directory.");
+                }
+                else if (!overwrite)
+                {
+                    throw new IOException("Destination file already exists and overwrite was not specified.");
+                }
+            }
+
+            data[destinationPath] = data[sourcePath];
+        }
+
+        public void MoveFile(string sourcePath, string destinationPath, bool overwrite)
+        {
+            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
+            sourcePath = Path.GetFullPath(sourcePath);
+            if (!data.ContainsKey(sourcePath) || data[sourcePath] == null)
+            {
+                throw new FileNotFoundException($"{nameof(sourcePath)} was not found.");
+            }
+
+            if (destinationPath == null) throw new ArgumentNullException(nameof(destinationPath));
+            destinationPath = Path.GetFullPath(destinationPath);
+            if (data.ContainsKey(destinationPath))
+            {
+                if (data[destinationPath] == null)
+                {
+                    throw new ArgumentException($"{nameof(destinationPath)} specifies a directory.");
+                }
+                else if (!overwrite)
+                {
+                    throw new IOException("Destination file already exists and overwrite was not specified.");
+                }
+            }
+
+            data[destinationPath] = data[sourcePath].ToList();
+            data.Remove(sourcePath);
         }
 
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
             path = Path.GetFullPath(path);
 
             if (data.ContainsKey(path) && data[path] == null)

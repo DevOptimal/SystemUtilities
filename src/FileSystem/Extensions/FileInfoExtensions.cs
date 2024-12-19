@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -6,6 +7,41 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 {
     public static class FileInfoExtensions
     {
+        public static void CopyTo(this FileInfo file, FileInfo destFile)
+        {
+            CopyTo(file, destFile, false, new DefaultFileSystem());
+        }
+
+        public static void CopyTo(this FileInfo file, FileInfo destFile, bool overwrite)
+        {
+            CopyTo(file, destFile, overwrite, new DefaultFileSystem());
+        }
+
+        public static void CopyTo(this FileInfo file, FileInfo destFile, IFileSystem fileSystem)
+        {
+            CopyTo(file, destFile, false, fileSystem);
+        }
+
+        public static void CopyTo(this FileInfo file, FileInfo destFile, bool overwrite, IFileSystem fileSystem)
+        {
+            if (destFile == null) throw new ArgumentNullException(nameof(destFile));
+
+            CopyTo(file, destFile.FullName, overwrite, fileSystem);
+        }
+
+        public static void CopyTo(this FileInfo file, string destFileName, IFileSystem fileSystem)
+        {
+            CopyTo(file, destFileName, false, fileSystem);
+        }
+
+        public static void CopyTo(this FileInfo file, string destFileName, bool overwrite, IFileSystem fileSystem)
+        {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
+            fileSystem.CopyFile(file.FullName, destFileName, overwrite);
+        }
+
         public static bool Equals(this FileInfo a, FileInfo b, IEqualityComparer<FileInfo> comparer)
         {
             return comparer.Equals(a, b);
@@ -14,6 +50,91 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         public static DriveInfo GetDrive(this FileInfo file)
         {
             return new DriveInfo(Path.GetPathRoot(file.FullName));
+        }
+
+        public static void HardLinkTo(this FileInfo file, FileInfo destFile)
+        {
+            HardLinkTo(file, destFile, false, new DefaultFileSystem());
+        }
+
+        public static void HardLinkTo(this FileInfo file, FileInfo destFile, bool overwrite)
+        {
+            HardLinkTo(file, destFile, overwrite, new DefaultFileSystem());
+        }
+
+        public static void HardLinkTo(this FileInfo file, FileInfo destFile, IFileSystem fileSystem)
+        {
+            HardLinkTo(file, destFile, false, fileSystem);
+        }
+
+        public static void HardLinkTo(this FileInfo file, FileInfo destFile, bool overwrite, IFileSystem fileSystem)
+        {
+            if (destFile == null) throw new ArgumentNullException(nameof(destFile));
+
+            HardLinkTo(file, destFile.FullName, overwrite, fileSystem);
+        }
+
+        public static void HardLinkTo(this FileInfo file, string destFileName)
+        {
+            HardLinkTo(file, destFileName, false, new DefaultFileSystem());
+        }
+
+        public static void HardLinkTo(this FileInfo file, string destFileName, bool overwrite)
+        {
+            HardLinkTo(file, destFileName, overwrite, new DefaultFileSystem());
+        }
+
+        public static void HardLinkTo(this FileInfo file, string destFileName, IFileSystem fileSystem)
+        {
+            HardLinkTo(file, destFileName, false , fileSystem);
+        }
+
+        public static void HardLinkTo(this FileInfo file, string destFileName, bool overwrite, IFileSystem fileSystem)
+        {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
+            fileSystem.HardLinkFile(file.FullName, destFileName, overwrite);
+        }
+
+        public static void MoveTo(this FileInfo file, FileInfo destFile)
+        {
+            MoveTo(file, destFile, false, new DefaultFileSystem());
+        }
+
+        public static void MoveTo(this FileInfo file, FileInfo destFile, bool overwrite)
+        {
+            MoveTo(file, destFile, overwrite, new DefaultFileSystem());
+        }
+
+        public static void MoveTo(this FileInfo file, FileInfo destFile, IFileSystem fileSystem)
+        {
+            MoveTo(file, destFile, false, fileSystem);
+        }
+
+        public static void MoveTo(this FileInfo file, FileInfo destFile, bool overwrite, IFileSystem fileSystem)
+        {
+            if (destFile == null) throw new ArgumentNullException(nameof(destFile));
+
+            MoveTo(file, destFile.FullName, overwrite, fileSystem);
+        }
+
+        public static void MoveTo(this FileInfo file, string destFileName, bool overwrite)
+        {
+            MoveTo(file, destFileName, overwrite, new DefaultFileSystem());
+        }
+
+        public static void MoveTo(this FileInfo file, string destFileName, IFileSystem fileSystem)
+        {
+            MoveTo(file, destFileName, false, fileSystem);
+        }
+
+        public static void MoveTo(this FileInfo file, string destFileName, bool overwrite, IFileSystem fileSystem)
+        {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
+            fileSystem.MoveFile(file.FullName, destFileName, overwrite);
         }
 
         public static FileStream Open(this FileInfo file, FileMode mode, IFileSystem fileSystem)
