@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
-using Windows.Win32;
+﻿using System.IO;
 
-namespace DevOptimal.SystemUtilities.FileSystem
+namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
     public class DefaultFileSystem : IFileSystem
     {
@@ -53,31 +51,12 @@ namespace DevOptimal.SystemUtilities.FileSystem
 
         public void HardLinkFile(string sourcePath, string destinationPath, bool overwrite)
         {
-            if (sourcePath == null)
-            {
-                throw new ArgumentNullException(nameof(sourcePath));
-            }
-            if (destinationPath == null)
-            {
-                throw new ArgumentNullException(nameof(destinationPath));
-            }
-
-            if (overwrite && File.Exists(destinationPath))
-            {
-                File.Delete(destinationPath);
-            }
-
-            PInvoke.CreateHardLink(@$"\\?\{destinationPath}", @$"\\?\{sourcePath}");
+            FileUtilities.HardLink(sourcePath, destinationPath, overwrite);
         }
 
         public void MoveFile(string sourcePath, string destinationPath, bool overwrite)
         {
-            if (overwrite && File.Exists(destinationPath))
-            {
-                File.Delete(destinationPath);
-            }
-
-            File.Move(sourcePath, destinationPath);
+            FileUtilities.Move(sourcePath, destinationPath, overwrite);
         }
 
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)

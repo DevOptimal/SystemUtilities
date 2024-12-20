@@ -4,7 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace DevOptimal.SystemUtilities.FileSystem
+namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
     public class MockFileStream : FileStream
     {

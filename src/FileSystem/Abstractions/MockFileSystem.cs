@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace DevOptimal.SystemUtilities.FileSystem
+namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
     public class MockFileSystem : IFileSystem
     {
