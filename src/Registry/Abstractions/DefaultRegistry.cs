@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace DevOptimal.SystemUtilities.Registry
+namespace DevOptimal.SystemUtilities.Registry.Abstractions
 {
     public class DefaultRegistry : IRegistry
     {
