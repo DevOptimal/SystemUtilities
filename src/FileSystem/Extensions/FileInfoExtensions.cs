@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 {

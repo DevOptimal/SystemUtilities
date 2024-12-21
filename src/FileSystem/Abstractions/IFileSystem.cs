@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DevOptimal.SystemUtilities.FileSystem
+namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
     public interface IFileSystem
     {
