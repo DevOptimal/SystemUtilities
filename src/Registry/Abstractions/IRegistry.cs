@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace DevOptimal.SystemUtilities.Registry
+namespace DevOptimal.SystemUtilities.Registry.Abstractions
 {
     public interface IRegistry
     {

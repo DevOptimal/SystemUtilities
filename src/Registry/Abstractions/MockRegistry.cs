@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DevOptimal.SystemUtilities.Registry
+namespace DevOptimal.SystemUtilities.Registry.Abstractions
 {
     public class MockRegistry : IRegistry
     {

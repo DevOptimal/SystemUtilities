@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DevOptimal.SystemUtilities.Environment
+namespace DevOptimal.SystemUtilities.Environment.Abstractions
 {
     public class MockEnvironment : IEnvironment
     {

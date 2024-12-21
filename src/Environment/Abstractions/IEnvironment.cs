@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DevOptimal.SystemUtilities.Environment
+namespace DevOptimal.SystemUtilities.Environment.Abstractions
 {
     public interface IEnvironment
     {
