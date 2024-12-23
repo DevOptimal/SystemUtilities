@@ -3,13 +3,13 @@ using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 
 namespace DevOptimal.SystemUtilities.FileSystem
 {
-    public class TemporaryFile : IDisposable
+    public class TemporaryFile(string path, IFileSystem fileSystem) : IDisposable
     {
         private bool disposedValue;
 
-        private readonly IFileSystem fileSystem;
+        private readonly IFileSystem fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-        public string Path { get; }
+        public string Path { get; } = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
 
         public TemporaryFile()
             : this(new DefaultFileSystem())
@@ -19,12 +19,6 @@ namespace DevOptimal.SystemUtilities.FileSystem
         public TemporaryFile(IFileSystem fileSystem)
             : this(GetUniqueTemporaryFileName(fileSystem), fileSystem)
         {
-        }
-
-        public TemporaryFile(string path, IFileSystem fileSystem)
-        {
-            Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
-            this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         protected virtual void Dispose(bool disposing)

@@ -1,5 +1,5 @@
-using System;
 using DevOptimal.SystemUtilities.Environment.Abstractions;
+using System;
 
 namespace DevOptimal.SystemUtilities.Environment.Tests
 {

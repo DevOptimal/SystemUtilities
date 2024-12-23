@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>DevOptimal.SystemUtilities.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>DevOptimal.SystemUtilities.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <LangVersion>12.0</LangVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\StrongName.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

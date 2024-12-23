@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DevOptimal.SystemUtilities.FileSystem.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 {
@@ -45,11 +45,23 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 
         public static bool Equals(this FileInfo a, FileInfo b, IEqualityComparer<FileInfo> comparer)
         {
+            if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+
             return comparer.Equals(a, b);
+        }
+
+        public static bool Exists(this FileInfo file, IFileSystem fileSystem)
+        {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
+            return fileSystem.FileExists(file.FullName);
         }
 
         public static DriveInfo GetDrive(this FileInfo file)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return new DriveInfo(Path.GetPathRoot(file.FullName));
         }
 
@@ -140,151 +152,229 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 
         public static FileStream Open(this FileInfo file, FileMode mode, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFile(file.FullName, mode);
         }
 
         public static FileStream Open(this FileInfo file, FileMode mode, FileAccess access, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFile(file.FullName, mode, access);
         }
 
         public static FileStream Open(this FileInfo file, FileMode mode, FileAccess access, FileShare share, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFile(file.FullName, mode, access, share);
         }
 
         public static FileStream OpenRead(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFileRead(file.FullName);
         }
 
         public static StreamReader OpenText(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFileText(file.FullName);
         }
 
         public static FileStream OpenWrite(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.OpenFileWrite(file.FullName);
         }
 
         public static byte[] ReadAllBytes(this FileInfo file)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return File.ReadAllBytes(file.FullName);
         }
 
         public static byte[] ReadAllBytes(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.ReadAllBytesFromFile(file.FullName);
         }
 
         public static string[] ReadAllLines(this FileInfo file)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return File.ReadAllLines(file.FullName);
         }
 
         public static string[] ReadAllLines(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.ReadAllLinesFromFile(file.FullName);
         }
 
         public static string[] ReadAllLines(this FileInfo file, Encoding encoding)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return File.ReadAllLines(file.FullName, encoding);
         }
 
         public static string[] ReadAllLines(this FileInfo file, Encoding encoding, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.ReadAllLinesFromFile(file.FullName, encoding);
         }
 
         public static string ReadAllText(this FileInfo file)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return File.ReadAllText(file.FullName);
         }
 
         public static string ReadAllText(this FileInfo file, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.ReadAllTextFromFile(file.FullName);
         }
 
         public static string ReadAllText(this FileInfo file, Encoding encoding)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             return File.ReadAllText(file.FullName, encoding);
         }
 
         public static string ReadAllText(this FileInfo file, Encoding encoding, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             return fileSystem.ReadAllTextFromFile(file.FullName, encoding);
         }
 
         public static void WriteAllBytes(this FileInfo file, byte[] bytes)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllBytes(file.FullName, bytes);
         }
 
         public static void WriteAllBytes(this FileInfo file, byte[] bytes, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllBytesToFile(file.FullName, bytes);
         }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllLines(file.FullName, lines);
         }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllLinesToFile(file.FullName, lines);
         }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines, Encoding encoding)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllLines(file.FullName, lines, encoding);
         }
 
         public static void WriteAllLines(this FileInfo file, IEnumerable<string> lines, Encoding encoding, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllLinesToFile(file.FullName, lines, encoding);
         }
 
         public static void WriteAllLines(this FileInfo file, string[] lines)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllLines(file.FullName, lines);
         }
 
         public static void WriteAllLines(this FileInfo file, string[] lines, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllLinesToFile(file.FullName, lines);
         }
 
         public static void WriteAllLines(this FileInfo file, string[] lines, Encoding encoding)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllLines(file.FullName, lines, encoding);
         }
 
         public static void WriteAllLines(this FileInfo file, string[] lines, Encoding encoding, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllLinesToFile(file.FullName, lines, encoding);
         }
 
         public static void WriteAllText(this FileInfo file, string contents)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllText(file.FullName, contents);
         }
 
         public static void WriteAllText(this FileInfo file, string contents, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllTextToFile(file.FullName, contents);
         }
 
         public static void WriteAllText(this FileInfo file, string contents, Encoding encoding)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
             File.WriteAllText(file.FullName, contents, encoding);
         }
 
         public static void WriteAllText(this FileInfo file, string contents, Encoding encoding, IFileSystem fileSystem)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
+
             fileSystem.WriteAllTextToFile(file.FullName, contents, encoding);
         }
     }

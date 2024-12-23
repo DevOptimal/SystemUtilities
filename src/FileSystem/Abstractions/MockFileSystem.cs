@@ -20,7 +20,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 
         private readonly static Regex[] invalidSearchPatternRegexes = Path.GetInvalidPathChars()
             .Select(c => Regex.Escape(c.ToString()))
-            .Concat(new[] { $@"\.\.{Regex.Escape(Path.DirectorySeparatorChar.ToString())}", $@"\.\.{Regex.Escape(Path.AltDirectorySeparatorChar.ToString())}", @"\.\.$" })
+            .Concat([$@"\.\.{Regex.Escape(Path.DirectorySeparatorChar.ToString())}", $@"\.\.{Regex.Escape(Path.AltDirectorySeparatorChar.ToString())}", @"\.\.$"])
             .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))
             .ToArray();
 
@@ -63,7 +63,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                 }
             }
 
-            data[destinationPath] = data[sourcePath].ToList();
+            data[destinationPath] = [.. data[sourcePath]];
         }
 
         public void CreateDirectory(string path)
@@ -81,7 +81,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             if (!data.ContainsKey(path))
             {
                 CreateDirectoryRecurse(Path.GetDirectoryName(path));
-                data[path] = new List<byte>();
+                data[path] = [];
             }
             else if (data[path] == null)
             {
@@ -229,7 +229,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                 }
             }
 
-            data[destinationPath] = data[sourcePath].ToList();
+            data[destinationPath] = [.. data[sourcePath]];
             data.Remove(sourcePath);
         }
 
@@ -300,7 +300,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                 }
             }
 
-            return result.ToArray();
+            return [.. result];
         }
 
         private Regex GetSearchPatternRegex(string searchPattern)

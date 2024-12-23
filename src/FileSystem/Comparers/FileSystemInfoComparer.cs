@@ -15,7 +15,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
 
         public static IEqualityComparer<FileSystemInfo> Windows => new WindowsFileSystemInfoComparer();
 
-        private readonly Lazy<IEqualityComparer<FileSystemInfo>> comparerLazy = new Lazy<IEqualityComparer<FileSystemInfo>>(() =>
+        private readonly Lazy<IEqualityComparer<FileSystemInfo>> comparerLazy = new(() =>
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
