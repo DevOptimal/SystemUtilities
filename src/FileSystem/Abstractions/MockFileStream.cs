@@ -93,7 +93,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 
                 if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystem.FileExists(path))
                 {
-                    File.WriteAllBytes(temporaryFilePath, fileSystem.data[path].ToArray());
+                    File.WriteAllBytes(temporaryFilePath, [.. fileSystem.data[path]]);
                 }
 
                 fileReferenceCounter[temporaryFilePath]++;

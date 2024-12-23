@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
     <Description>Library for interacting with file system resources, such as directories and files.</Description>
   </PropertyGroup>
 

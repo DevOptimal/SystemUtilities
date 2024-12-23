@@ -50,7 +50,7 @@ namespace DevOptimal.SystemUtilities.Registry.Abstractions
         public void DeleteRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
         {
             subKey = RegistryPath.GetFullPath(subKey);
-            name = name ?? defaultValueName;
+            name ??= defaultValueName;
 
             if (!data[hive][view].ContainsKey(subKey))
             {
@@ -68,7 +68,7 @@ namespace DevOptimal.SystemUtilities.Registry.Abstractions
         public (object value, RegistryValueKind kind) GetRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
         {
             subKey = RegistryPath.GetFullPath(subKey);
-            name = name ?? defaultValueName;
+            name ??= defaultValueName;
 
             if (!data[hive][view].ContainsKey(subKey))
             {
@@ -93,7 +93,7 @@ namespace DevOptimal.SystemUtilities.Registry.Abstractions
         public bool RegistryValueExists(RegistryHive hive, RegistryView view, string subKey, string name)
         {
             subKey = RegistryPath.GetFullPath(subKey);
-            name = name ?? defaultValueName;
+            name ??= defaultValueName;
 
             return data[hive][view].ContainsKey(subKey) && data[hive][view][subKey].ContainsKey(name);
         }
@@ -101,7 +101,7 @@ namespace DevOptimal.SystemUtilities.Registry.Abstractions
         public void SetRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name, object value, RegistryValueKind kind)
         {
             subKey = RegistryPath.GetFullPath(subKey);
-            name = name ?? defaultValueName;
+            name ??= defaultValueName;
 
             if (!data[hive][view].ContainsKey(subKey))
             {
