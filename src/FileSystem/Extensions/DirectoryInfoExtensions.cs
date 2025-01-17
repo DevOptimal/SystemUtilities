@@ -1,7 +1,9 @@
 ﻿using DevOptimal.SystemUtilities.FileSystem.Abstractions;
+using DevOptimal.SystemUtilities.FileSystem.Comparers;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Extensions
 {
@@ -27,7 +29,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (directory == null) throw new ArgumentNullException(nameof(directory));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            return directory.GetDirectory(new[] { name });
+            return directory.GetDirectory([name]);
         }
 
         public static DirectoryInfo GetDirectory(this DirectoryInfo directory, params string[] names)
@@ -50,7 +52,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (directory == null) throw new ArgumentNullException(nameof(directory));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            return directory.GetFile(new[] { name });
+            return directory.GetFile([name]);
         }
 
         public static FileInfo GetFile(this DirectoryInfo directory, params string[] names)
@@ -59,6 +61,48 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (names == null) throw new ArgumentNullException(nameof(names));
 
             return new FileInfo(Path.Combine(directory.FullName, Path.Combine(names)));
+        }
+
+        /// <summary>
+        /// Determines whether a directory is an ancestor of another directory.
+        /// </summary>
+        /// <param name="directory">The directory to test.</param>
+        /// <param name="descendant">The descendant to test.</param>
+        /// <returns>True if <paramref name="directory"/> is an ancestor of <paramref name="descendant"/>, false otherwise.</returns>
+        public static bool IsAncestorOf(this DirectoryInfo directory, DirectoryInfo descendant)
+        {
+            return descendant.IsDescendantOf(directory);
+        }
+
+        /// <summary>
+        /// Determines whether a directory is a descendant of another directory.
+        /// </summary>
+        /// <param name="directory">The directory to test.</param>
+        /// <param name="ancestor">The ancester directory to test.</param>
+        /// <returns>True if <paramref name="directory"/> is a descendant of <paramref name="ancestor"/>, false otherwise.</returns>
+        public static bool IsDescendantOf(this DirectoryInfo directory, DirectoryInfo ancestor)
+        {
+            return directory.IsDescendantOf(ancestor, new DirectoryInfoComparer());
+        }
+
+        internal static bool IsDescendantOf(this DirectoryInfo directory, DirectoryInfo ancestor, DirectoryInfoComparer comparer)
+        {
+            if (directory == null || ancestor == null)
+            {
+                return false;
+            }
+
+            var current = directory.Parent;
+            while (current != null)
+            {
+                if (comparer.Equals(current, ancestor))
+                {
+                    return true;
+                }
+                current = current.Parent;
+            }
+
+            return false;
         }
     }
 }

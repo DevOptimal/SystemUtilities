@@ -38,5 +38,25 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Extensions
         {
             Assert.IsTrue(DirectoryUnderTest.GetFile("bar", "baz.txt").Equals(new FileInfo(@"C:\foo\bar\baz.txt"), FileInfoComparer.Default));
         }
+
+        [TestMethod]
+        public void IdentifiesADescendantDirectory()
+        {
+            var descendant = new DirectoryInfo(@"C:\foo\bar");
+            Assert.IsFalse(descendant.IsDescendantOf(null));
+            Assert.IsFalse(descendant.IsDescendantOf(descendant));
+            Assert.IsTrue(descendant.IsDescendantOf(new DirectoryInfo(@"C:\foo")));
+            Assert.IsTrue(descendant.IsDescendantOf(new DirectoryInfo(@"C:\foo\bar\..")));
+        }
+
+        [TestMethod]
+        public void IdentifiesAnAncestorDirectory()
+        {
+            var ancestor = new DirectoryInfo(@"C:\foo");
+            Assert.IsFalse(ancestor.IsAncestorOf(null));
+            Assert.IsFalse(ancestor.IsAncestorOf(ancestor));
+            Assert.IsTrue(ancestor.IsAncestorOf(new DirectoryInfo(@"C:\foo\bar")));
+            Assert.IsFalse(ancestor.IsAncestorOf(new DirectoryInfo(@"C:\foo\..\bar")));
+        }
     }
 }
