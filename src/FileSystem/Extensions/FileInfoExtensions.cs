@@ -1,4 +1,5 @@
 ﻿using DevOptimal.SystemUtilities.FileSystem.Abstractions;
+using DevOptimal.SystemUtilities.FileSystem.Comparers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -108,6 +109,19 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
             fileSystem.HardLinkFile(file.FullName, destFileName, overwrite);
+        }
+
+        /// <summary>
+        /// Determines whether a file is a descendant of a directory.
+        /// </summary>
+        /// <param name="file">The file to test.</param>
+        /// <param name="ancestor">The ancestor directory to test.</param>
+        /// <returns>True if <paramref name="file"/> is a descendant of <paramref name="ancestor"/>, false otherwise.</returns>
+        public static bool IsDescendantOf(this FileInfo file, DirectoryInfo ancestor)
+        {
+            var comparer = new DirectoryInfoComparer();
+            var directory = file.Directory;
+            return comparer.Equals(directory, ancestor) || directory.IsDescendantOf(ancestor, comparer);
         }
 
         public static void MoveTo(this FileInfo file, FileInfo destFile)

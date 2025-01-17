@@ -15,5 +15,19 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Extensions
         {
             Assert.IsTrue(FileUnderTest.GetDrive().Equals(new DriveInfo(@"C:\"), DriveInfoComparer.Default));
         }
+
+        [TestMethod]
+        public void IdentifiesADescendantFile()
+        {
+            var ancestor = new DirectoryInfo(@"C:\foo");
+
+            var descendant = new FileInfo(@"C:\foo\bar.txt");
+            Assert.IsTrue(descendant.IsDescendantOf(ancestor));
+
+            descendant = new FileInfo(@"C:\foo\..\bar.txt");
+            Assert.IsFalse(descendant.IsDescendantOf(ancestor));
+
+            Assert.IsFalse(descendant.IsDescendantOf(null));
+        }
     }
 }
