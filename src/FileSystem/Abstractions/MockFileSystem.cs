@@ -8,8 +8,14 @@ using System.Text.RegularExpressions;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
+    /// <summary>
+    /// Provides an in-memory implementation of <see cref="IFileSystem"/> for testing purposes.
+    /// </summary>
     public class MockFileSystem : IFileSystem
     {
+        /// <summary>
+        /// Unique identifier for this mock file system instance.
+        /// </summary>
         internal readonly string id = Guid.NewGuid().ToString();
 
         /// <summary>
@@ -18,12 +24,14 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         /// </summary>
         internal readonly IDictionary<string, List<byte>> data;
 
-        private readonly static Regex[] invalidSearchPatternRegexes = Path.GetInvalidPathChars()
+        private readonly static Regex[] invalidSearchPatternRegexes = [.. Path.GetInvalidPathChars()
             .Select(c => Regex.Escape(c.ToString()))
             .Concat([$@"\.\.{Regex.Escape(Path.DirectorySeparatorChar.ToString())}", $@"\.\.{Regex.Escape(Path.AltDirectorySeparatorChar.ToString())}", @"\.\.$"])
-            .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))
-            .ToArray();
+            .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))];
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MockFileSystem"/> class.
+        /// </summary>
         public MockFileSystem()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -40,6 +48,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             }
         }
 
+        /// <inheritdoc/>
         public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
         {
             if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
@@ -66,6 +75,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             data[destinationPath] = [.. data[sourcePath]];
         }
 
+        /// <inheritdoc/>
         public void CreateDirectory(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -73,6 +83,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             CreateDirectoryRecurse(path);
         }
 
+        /// <inheritdoc/>
         public void CreateFile(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -89,6 +100,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             }
         }
 
+        /// <inheritdoc/>
         public void DeleteDirectory(string path, bool recursive)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -126,6 +138,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             data.Remove(path);
         }
 
+        /// <inheritdoc/>
         public void DeleteFile(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -140,6 +153,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             data.Remove(path);
         }
 
+        /// <inheritdoc/>
         public bool DirectoryExists(string path)
         {
             try
@@ -153,6 +167,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             }
         }
 
+        /// <inheritdoc/>
         public bool FileExists(string path)
         {
             try
@@ -166,6 +181,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             }
         }
 
+        /// <inheritdoc/>
         public string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -173,6 +189,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: true, includeFiles: false);
         }
 
+        /// <inheritdoc/>
         public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -180,6 +197,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             return GetFileSystemEntries(path, searchPattern, searchOption, includeDirectories: false, includeFiles: true);
         }
 
+        /// <inheritdoc/>
         public void HardLinkFile(string sourcePath, string destinationPath, bool overwrite)
         {
             if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
@@ -206,6 +224,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             data[destinationPath] = data[sourcePath];
         }
 
+        /// <inheritdoc/>
         public void MoveFile(string sourcePath, string destinationPath, bool overwrite)
         {
             if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
@@ -233,6 +252,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             data.Remove(sourcePath);
         }
 
+        /// <inheritdoc/>
         public FileStream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -246,16 +266,24 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             return new MockFileStream(this, path, mode, access, share);
         }
 
+        /// <summary>
+        /// Recursively creates directories for the specified path.
+        /// </summary>
+        /// <param name="path">The directory path to create.</param>
         private void CreateDirectoryRecurse(string path)
         {
-            CreateDirectoryRecurse(Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries));
+            CreateDirectoryRecurse(Path.GetFullPath(path).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries));
         }
 
+        /// <summary>
+        /// Recursively creates directories for the specified path parts.
+        /// </summary>
+        /// <param name="pathParts">The parts of the directory path.</param>
         private void CreateDirectoryRecurse(string[] pathParts)
         {
             if (pathParts.Length > 0)
             {
-                CreateDirectoryRecurse(pathParts.Take(pathParts.Length - 1).ToArray());
+                CreateDirectoryRecurse([.. pathParts.Take(pathParts.Length - 1)]);
 
                 var path = Path.GetFullPath(Path.Combine(pathParts));
 
@@ -268,17 +296,26 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             }
         }
 
+        /// <summary>
+        /// Gets file system entries (files or directories) matching the specified criteria.
+        /// </summary>
+        /// <param name="ancestorPath">The ancestor directory path.</param>
+        /// <param name="searchPattern">The search pattern to match.</param>
+        /// <param name="searchOption">The search option.</param>
+        /// <param name="includeDirectories">Whether to include directories.</param>
+        /// <param name="includeFiles">Whether to include files.</param>
+        /// <returns>An array of matching file system entry paths.</returns>
         private string[] GetFileSystemEntries(string ancestorPath, string searchPattern, SearchOption searchOption, bool includeDirectories, bool includeFiles)
         {
             var searchPatternRegex = GetSearchPatternRegex(searchPattern);
-            var ancestorPathParts = Path.GetFullPath(ancestorPath).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var ancestorPathParts = Path.GetFullPath(ancestorPath).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
 
             var result = new List<string>();
             foreach (var path in data.Keys)
             {
                 if (includeDirectories == (data[path] == null) || includeFiles == (data[path] != null))
                 {
-                    var pathParts = Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                    var pathParts = Path.GetFullPath(path).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
 
                     if (pathParts.Length > ancestorPathParts.Length && (searchOption == SearchOption.AllDirectories || pathParts.Length == ancestorPathParts.Length + 1))
                     {
@@ -303,6 +340,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
             return [.. result];
         }
 
+        /// <summary>
+        /// Compiles a regular expression for the given search pattern.
+        /// </summary>
+        /// <param name="searchPattern">The search pattern.</param>
+        /// <returns>A <see cref="Regex"/> for the search pattern.</returns>
+        /// <exception cref="ArgumentException">Thrown if the search pattern is invalid.</exception>
         private Regex GetSearchPatternRegex(string searchPattern)
         {
             foreach (var invalidSearchPatternRegex in invalidSearchPatternRegexes)

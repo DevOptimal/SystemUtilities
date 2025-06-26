@@ -112,10 +112,9 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ThrowsOnGetNonexistentRegistryKey()
         {
-            var (value, kind) = registry.GetRegistryValue(hive, view, subKey, name);
+            Assert.ThrowsExactly<ArgumentException>(() => registry.GetRegistryValue(hive, view, subKey, name));
         }
     }
 }
