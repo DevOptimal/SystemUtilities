@@ -72,7 +72,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests
         {
             var actualValue = environment.GetEnvironmentVariable(name, target);
 
-            Assert.AreEqual(null, actualValue);
+            Assert.IsNull(actualValue);
         }
     }
 }

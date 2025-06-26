@@ -24,11 +24,10 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         /// </summary>
         internal readonly IDictionary<string, List<byte>> data;
 
-        private readonly static Regex[] invalidSearchPatternRegexes = Path.GetInvalidPathChars()
+        private readonly static Regex[] invalidSearchPatternRegexes = [.. Path.GetInvalidPathChars()
             .Select(c => Regex.Escape(c.ToString()))
             .Concat([$@"\.\.{Regex.Escape(Path.DirectorySeparatorChar.ToString())}", $@"\.\.{Regex.Escape(Path.AltDirectorySeparatorChar.ToString())}", @"\.\.$"])
-            .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))
-            .ToArray();
+            .Select(s => new Regex(s, RegexOptions.IgnoreCase | RegexOptions.Compiled))];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MockFileSystem"/> class.
@@ -273,7 +272,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         /// <param name="path">The directory path to create.</param>
         private void CreateDirectoryRecurse(string path)
         {
-            CreateDirectoryRecurse(Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries));
+            CreateDirectoryRecurse(Path.GetFullPath(path).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>
@@ -284,7 +283,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         {
             if (pathParts.Length > 0)
             {
-                CreateDirectoryRecurse(pathParts.Take(pathParts.Length - 1).ToArray());
+                CreateDirectoryRecurse([.. pathParts.Take(pathParts.Length - 1)]);
 
                 var path = Path.GetFullPath(Path.Combine(pathParts));
 
@@ -309,14 +308,14 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         private string[] GetFileSystemEntries(string ancestorPath, string searchPattern, SearchOption searchOption, bool includeDirectories, bool includeFiles)
         {
             var searchPatternRegex = GetSearchPatternRegex(searchPattern);
-            var ancestorPathParts = Path.GetFullPath(ancestorPath).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var ancestorPathParts = Path.GetFullPath(ancestorPath).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
 
             var result = new List<string>();
             foreach (var path in data.Keys)
             {
                 if (includeDirectories == (data[path] == null) || includeFiles == (data[path] != null))
                 {
-                    var pathParts = Path.GetFullPath(path).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                    var pathParts = Path.GetFullPath(path).Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
 
                     if (pathParts.Length > ancestorPathParts.Length && (searchOption == SearchOption.AllDirectories || pathParts.Length == ancestorPathParts.Length + 1))
                     {

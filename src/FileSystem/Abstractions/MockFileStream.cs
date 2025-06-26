@@ -97,7 +97,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                     }
                     else
                     {
-                        fileSystem.data[path] = new List<byte>(bytes);
+                        fileSystem.data[path] = [.. bytes];
                     }
                 }
 
