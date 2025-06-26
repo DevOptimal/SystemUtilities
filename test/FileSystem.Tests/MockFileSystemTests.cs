@@ -61,7 +61,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             var actualBytes = new byte[expectedBytes.Count];
             using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None))
             {
-                stream.Read(actualBytes, 0, expectedBytes.Count);
+                stream.ReadExactly(actualBytes);
             }
 
             CollectionAssert.AreEqual(expectedBytes, actualBytes);
@@ -82,7 +82,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
                     var actualBytes = new byte[expectedBytes.Count];
                     using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        stream.Read(actualBytes, 0, expectedBytes.Count);
+                        stream.ReadExactly(actualBytes);
                     }
 
                     CollectionAssert.AreEqual(expectedBytes, actualBytes);
@@ -116,7 +116,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.CreateDirectory(path);
 
             Assert.IsTrue(fileSystem.data.ContainsKey(path));
-            Assert.AreEqual(null, fileSystem.data[path]);
+            Assert.IsNull(fileSystem.data[path]);
         }
 
         [TestMethod]
@@ -204,21 +204,19 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ThrowsOnSearchPatternEndingWithTwoDots()
         {
             fileSystem.CreateDirectory(@"C:\foo\bar");
 
-            _ = fileSystem.GetDirectories(@"C:\foo", "*..", SearchOption.AllDirectories);
+            Assert.ThrowsExactly<ArgumentException>(() => _ = fileSystem.GetDirectories(@"C:\foo", "*..", SearchOption.AllDirectories));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ThrowsOnSearchPatternWithInvalidPathChars()
         {
             fileSystem.CreateDirectory(@"C:\foo\bar");
 
-            _ = fileSystem.GetDirectories(@"C:\foo", "*bar|", SearchOption.AllDirectories);
+            Assert.ThrowsExactly<ArgumentException>(() => _ = fileSystem.GetDirectories(@"C:\foo", "*bar|", SearchOption.AllDirectories));
         }
 
         [TestMethod]

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Library for interacting with registry resources, such as registry keys and values.</Description>
   </PropertyGroup>
 
