@@ -1,5 +1,5 @@
-﻿using DevOptimal.SystemUtilities.Common.StateManagement.Serialization;
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
@@ -13,7 +13,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         public DateTime ProcessStartTime { get; set; }
 
-        public SnapshotSerializer Serializer { get; set; }
+        public Database Database { get; set; }
 
         public TOriginator Originator { get; set; }
 
@@ -21,13 +21,23 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         private bool disposedValue;
 
-        public Caretaker(string id, int processID, DateTime processStartTime, SnapshotSerializer serializer, TOriginator originator) : this(id, processID, processStartTime, serializer, originator, originator.GetState())
+        public Caretaker(string id, int processID, DateTime processStartTime, Database database, TOriginator originator) : this(id, processID, processStartTime, database, originator, originator.GetState())
         {
-            Serializer.AddSnapshot(this);
+            Database.BeginTransaction(TimeSpan.FromSeconds(30));
+            try 
+            {
+                Database.UpdateSnapshots(AddSnapshot);
+                Database.CommitTransaction();
+            }
+            catch
+            {
+                Database.RollbackTransaction();
+                throw;
+            }
         }
 
         // For serialization
-        public Caretaker(string id, int processID, DateTime processStartTime, SnapshotSerializer serializer, TOriginator originator, TMemento memento)
+        public Caretaker(string id, int processID, DateTime processStartTime, Database database, TOriginator originator, TMemento memento)
         {
             if (originator == null)
             {
@@ -42,9 +52,33 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             ID = id ?? throw new ArgumentNullException(nameof(id));
             ProcessID = processID;
             ProcessStartTime = processStartTime;
-            Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            Database = database ?? throw new ArgumentNullException(nameof(database));
             Originator = originator;
             Memento = memento;
+        }
+
+        private IEnumerable<ISnapshot> AddSnapshot(IEnumerable<ISnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+            {
+                if (snapshot.ID == ID)
+                {
+                    throw new Exception();
+                }
+                yield return snapshot;
+            }
+            yield return this;
+        }
+
+        private IEnumerable<ISnapshot> RemoveSnapshot(IEnumerable<ISnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+            {
+                if (snapshot.ID != ID)
+                {
+                    yield return snapshot;
+                }
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -54,7 +88,17 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 if (disposing)
                 {
                     Originator.SetState(Memento);
-                    Serializer.RemoveSnapshot(this);
+                    Database.BeginTransaction(TimeSpan.FromSeconds(30));
+                    try
+                    {
+                        Database.UpdateSnapshots(RemoveSnapshot);
+                        Database.CommitTransaction();
+                    }
+                    catch
+                    {
+                        Database.RollbackTransaction();
+                        throw;
+                    }
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

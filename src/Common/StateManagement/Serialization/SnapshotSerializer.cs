@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
@@ -12,9 +13,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
     {
         protected const string resourceTypePropertyName = "$resource-type";
 
-        public IEnumerable<ISnapshot> ReadSnapshots(JsonReader reader)
+        public IEnumerable<ISnapshot> ReadSnapshots(JsonReader reader, Database database)
         {
-            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(ConvertDictionaryToSnapshot);
+            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToSnapshot(d, database));
         }
 
         public void WriteSnapshots(JsonWriter writer, IEnumerable<ISnapshot> snapshots)
@@ -22,7 +23,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             writer.WriteArray(snapshots.Select(ConvertSnapshotToDictionary));
         }
 
-        protected abstract ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary);
+        protected abstract ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Database database);
 
         protected abstract IDictionary<string, object> ConvertSnapshotToDictionary(ISnapshot snapshot);
 

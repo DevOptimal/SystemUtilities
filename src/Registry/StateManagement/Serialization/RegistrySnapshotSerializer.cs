@@ -18,7 +18,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         private const string registryKeyResourceTypeName = "RegistryKey";
         private const string registryValueResourceTypeName = "RegistryValue";
 
-        protected override ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary)
+        protected override ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Database database)
         {
             // Get snapshot fields
             var id = AsString(dictionary[nameof(ISnapshot.ID)]);
@@ -39,7 +39,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Exists = registryKeyExists
                     };
 
-                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, processId, processStartTime, this, registryKeyOriginator, registryKeyMemento);
+                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, processId, processStartTime, database, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
                     var registryValueHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryValueOriginator.Hive)]);
                     var registryValueView = AsEnum<RegistryView>(dictionary[nameof(RegistryValueOriginator.View)]);
@@ -55,7 +55,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Kind = registryValueKind
                     };
 
-                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, processId, processStartTime, this, registryValueOriginator, registryValueMemento);
+                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, processId, processStartTime, database, registryValueOriginator, registryValueMemento);
                 default: throw new Exception();
             }
         }

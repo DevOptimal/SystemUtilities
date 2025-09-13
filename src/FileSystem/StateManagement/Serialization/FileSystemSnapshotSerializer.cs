@@ -15,7 +15,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
         private const string directoryResourceTypeName = "Directory";
         private const string fileResourceTypeName = "File";
 
-        protected override ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary)
+        protected override ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Database database)
         {
             // Get snapshot fields
             var id = AsString(dictionary[nameof(ISnapshot.ID)]);
@@ -34,7 +34,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                         Exists = directoryExists
                     };
 
-                    return new Caretaker<DirectoryOriginator, DirectoryMemento>(id, processId, processStartTime, this, directoryOriginator, directoryMemento);
+                    return new Caretaker<DirectoryOriginator, DirectoryMemento>(id, processId, processStartTime, database, directoryOriginator, directoryMemento);
                 case fileResourceTypeName:
                     var filePath = AsString(dictionary[nameof(FileOriginator.Path)]);
                     var fileHash = AsString(dictionary[nameof(FileMemento.Hash)]);
@@ -45,7 +45,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                         Hash = fileHash
                     };
 
-                    return new Caretaker<FileOriginator, FileMemento>(id, processId, processStartTime, this, fileOriginator, fileMemento);
+                    return new Caretaker<FileOriginator, FileMemento>(id, processId, processStartTime, database, fileOriginator, fileMemento);
                 default: throw new Exception();
             }
         }
