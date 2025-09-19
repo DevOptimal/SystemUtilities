@@ -1,21 +1,25 @@
 ﻿using DevOptimal.SystemUtilities.Common.StateManagement.Serialization;
 using System;
+using System.Collections.Generic;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
+    // TODO: Can we combine the database and snapshotter into one class?
     public abstract class Snapshotter : IDisposable
     {
-        private readonly SnapshotSerializer serializer;
+        internal readonly Database database;
+        private readonly List<ISnapshot> snapshots;
         private bool disposedValue;
 
         internal Snapshotter(SnapshotSerializer serializer)
         {
-            this.serializer = serializer;
+            database = new Database(serializer);
+            snapshots = [];
         }
 
-        protected void PersistSnapshot(ISnapshot snapshot)
+        protected void AddSnapshot(ISnapshot snapshot)
         {
-
+            snapshots.Add(snapshot);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -24,7 +28,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    foreach (var snapshot in snapshots)
+                    {
+                        snapshot.Dispose();
+                    }
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

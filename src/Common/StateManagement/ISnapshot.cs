@@ -2,7 +2,7 @@
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
-    public interface ISnapshot
+    public interface ISnapshot : IDisposable
     {
         string ID { get; }
 

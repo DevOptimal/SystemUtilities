@@ -2,28 +2,25 @@
 using DevOptimal.SystemUtilities.Registry.Abstractions;
 using Microsoft.Win32;
 using System;
+using System.Xml.Linq;
 
 namespace DevOptimal.SystemUtilities.Registry.StateManagement
 {
-    internal class RegistryValueOriginator : IOriginator<RegistryValueMemento>
+    internal class RegistryValueOriginator(RegistryHive hive, RegistryView view, string subKey, string name, IRegistry registry) : IOriginator<RegistryValueMemento>
     {
-        public RegistryHive Hive { get; }
+        public RegistryHive Hive { get; } = hive;
 
-        public RegistryView View { get; }
+        public RegistryView View { get; } = view;
 
-        public string SubKey { get; }
+        public string SubKey { get; } = subKey;
 
-        public string Name { get; }
+        public string Name { get; } = name;
 
-        public IRegistry Registry { get; }
+        public IRegistry Registry { get; } = registry ?? throw new ArgumentNullException(nameof(registry));
 
-        public RegistryValueOriginator(RegistryHive hive, RegistryView view, string subKey, string name, IRegistry registry)
+        public string GetID()
         {
-            Hive = hive;
-            View = view;
-            SubKey = subKey;
-            Name = name;
-            Registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            return $@"{Hive}\{View}\{SubKey}\\{Name ?? "(Default)"}".ToLower();
         }
 
         public RegistryValueMemento GetState()

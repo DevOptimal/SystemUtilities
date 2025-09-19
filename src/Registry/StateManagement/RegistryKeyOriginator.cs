@@ -5,22 +5,19 @@ using System;
 
 namespace DevOptimal.SystemUtilities.Registry.StateManagement
 {
-    internal class RegistryKeyOriginator : IOriginator<RegistryKeyMemento>
+    internal class RegistryKeyOriginator(RegistryHive hive, RegistryView view, string subKey, IRegistry registry) : IOriginator<RegistryKeyMemento>
     {
-        public RegistryHive Hive { get; }
+        public RegistryHive Hive { get; } = hive;
 
-        public RegistryView View { get; }
+        public RegistryView View { get; } = view;
 
-        public string SubKey { get; }
+        public string SubKey { get; } = subKey;
 
-        public IRegistry Registry { get; }
+        public IRegistry Registry { get; } = registry ?? throw new ArgumentNullException(nameof(registry));
 
-        public RegistryKeyOriginator(RegistryHive hive, RegistryView view, string subKey, IRegistry registry)
+        public string GetID()
         {
-            Hive = hive;
-            View = view;
-            SubKey = subKey;
-            Registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            return $@"{Hive}\{View}\{SubKey}".ToLower();
         }
 
         public RegistryKeyMemento GetState()

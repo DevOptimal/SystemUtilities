@@ -1,6 +1,6 @@
 ﻿using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 
-namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
+namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching
 {
     public interface IFileCache
     {

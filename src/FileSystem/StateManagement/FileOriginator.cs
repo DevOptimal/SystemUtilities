@@ -1,31 +1,41 @@
 ﻿using DevOptimal.SystemUtilities.Common.StateManagement;
 using DevOptimal.SystemUtilities.FileSystem.Abstractions;
+using DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching;
 using System;
+using System.Runtime.InteropServices;
 
 namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
 {
-    internal class FileOriginator : IOriginator<FileMemento>
+    internal class FileOriginator(string path, IFileCache fileCache, IFileSystem fileSystem) : IOriginator<FileMemento>
     {
-        public string Path { get; }
+        public string Path { get; } = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
 
         /// <summary>
         /// Files can be big, so their contents cannot be stored in memory. Instead, persist the content to a blob
         /// store, indexed by its hash. The hash will be stored in the FileMemento.
         /// </summary>
-        public IFileCache FileCache { get; }
+        public IFileCache FileCache { get; } = fileCache ?? throw new ArgumentNullException(nameof(fileCache));
 
-        public IFileSystem FileSystem { get; }
+        public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-        public FileOriginator(string path, IFileCache fileCache, IFileSystem fileSystem)
+        public string GetID()
         {
-            if (path == null)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                throw new ArgumentNullException(nameof(path));
+                return Path;
             }
-
-            Path = System.IO.Path.GetFullPath(path);
-            FileCache = fileCache ?? throw new ArgumentNullException(nameof(fileCache));
-            FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Path.ToLower();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Path;
+            }
+            else
+            {
+                throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+            }
         }
 
         public FileMemento GetState()

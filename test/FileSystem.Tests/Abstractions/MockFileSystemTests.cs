@@ -1,4 +1,3 @@
-using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,20 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevOptimal.SystemUtilities.FileSystem.Tests
+namespace DevOptimal.SystemUtilities.FileSystem.Tests.Abstractions
 {
     [TestClass]
-    public class MockFileSystemTests
+    public class MockFileSystemTests : MockFileSystemTestBase
     {
-        private MockFileSystem fileSystem;
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            fileSystem = new MockFileSystem();
-        }
-
-
         [TestMethod]
         public void IdentifiesExistentAndNonexistentFiles()
         {

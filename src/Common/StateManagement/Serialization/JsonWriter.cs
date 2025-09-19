@@ -5,8 +5,7 @@ using System.IO;
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
     /// <summary>
-    /// Goal of this serializer is efficient resource usage by streaming arrays instead of loading all of them into memory at once.
-    /// To accomplish this, we parse and yield return objects as we read them from the JSON array via the file stream.
+    /// Write an enumerable as a JSON array.
     /// Reference: https://www.json.org/json-en.html
     /// </summary>
     internal class JsonWriter : StreamWriter

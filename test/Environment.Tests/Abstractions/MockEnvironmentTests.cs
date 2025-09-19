@@ -1,25 +1,8 @@
-using DevOptimal.SystemUtilities.Environment.Abstractions;
-using System;
-
-namespace DevOptimal.SystemUtilities.Environment.Tests
+namespace DevOptimal.SystemUtilities.Environment.Tests.Abstractions
 {
     [TestClass]
-    public class EnvironmentVariableTests
+    public class MockEnvironmentTests : MockEnvironmentTestBase
     {
-        private MockEnvironment environment;
-
-        private const string name = "foo";
-
-        private const EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine;
-
-        private const string expectedValue = "bar";
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            environment = new MockEnvironment();
-        }
-
         [TestMethod]
         public void GetsTheCorrectValue()
         {

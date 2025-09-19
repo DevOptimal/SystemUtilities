@@ -6,6 +6,10 @@ using System.Text;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
+    /// <summary>
+    /// Read a JSON array as an enumerable.
+    /// Reference: https://www.json.org/json-en.html
+    /// </summary>
     internal class JsonReader : StreamReader
     {
         public JsonReader(FileInfo file)

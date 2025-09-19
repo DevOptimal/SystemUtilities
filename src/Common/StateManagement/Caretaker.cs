@@ -1,5 +1,7 @@
-﻿using System;
+﻿using DevOptimal.SystemUtilities.Common.StateManagement.Exceptions;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
@@ -21,8 +23,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         private bool disposedValue;
 
-        public Caretaker(string id, int processID, DateTime processStartTime, Database database, TOriginator originator) : this(id, processID, processStartTime, database, originator, originator.GetState())
+        public Caretaker(TOriginator originator, Database database)
         {
+            Originator = originator ?? throw new ArgumentNullException(nameof(originator));
+            Database = database ?? throw new ArgumentNullException(nameof(database));
+            ID = originator.GetID();
+            var currentProcess = Process.GetCurrentProcess();
+            ProcessID = currentProcess.Id;
+            ProcessStartTime = currentProcess.StartTime;
+
             Database.BeginTransaction(TimeSpan.FromSeconds(30));
             try 
             {
@@ -39,22 +48,12 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         // For serialization
         public Caretaker(string id, int processID, DateTime processStartTime, Database database, TOriginator originator, TMemento memento)
         {
-            if (originator == null)
-            {
-                throw new ArgumentNullException(nameof(originator));
-            }
-
-            if (memento == null)
-            {
-                throw new ArgumentNullException(nameof(memento));
-            }
-
             ID = id ?? throw new ArgumentNullException(nameof(id));
             ProcessID = processID;
             ProcessStartTime = processStartTime;
             Database = database ?? throw new ArgumentNullException(nameof(database));
-            Originator = originator;
-            Memento = memento;
+            Originator = originator ?? throw new ArgumentNullException(nameof(originator));
+            Memento = memento ?? throw new ArgumentNullException(nameof(memento));
         }
 
         private IEnumerable<ISnapshot> AddSnapshot(IEnumerable<ISnapshot> snapshots)
@@ -63,10 +62,11 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (snapshot.ID == ID)
                 {
-                    throw new Exception();
+                    throw new ResourceLockedException();
                 }
                 yield return snapshot;
             }
+            Memento = Originator.GetState();
             yield return this;
         }
 
