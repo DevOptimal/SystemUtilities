@@ -34,7 +34,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
 
@@ -54,7 +54,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
 
@@ -79,7 +79,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
 
@@ -91,19 +91,23 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
 
         protected string AsString(object o)
         {
-            if (o is string s)
+            if (o == null)
+            {
+                return null;
+            }
+            else if (o is string s)
             {
                 return s;
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
     }

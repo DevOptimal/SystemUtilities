@@ -24,9 +24,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 nameof(SystemUtilities),
                 nameof(StateManagement)));
 
-        private DirectoryInfo DatabaseFile => new(Path.Combine(DatabaseDirectory.FullName, $"{serializer.GetType().Name}.json"));
+        private FileInfo DatabaseFile => new(Path.Combine(DatabaseDirectory.FullName, $"{serializer.GetType().Name}.json"));
 
-        private DirectoryInfo TransactionFile => new(Path.Combine(DatabaseDirectory.FullName, $"{serializer.GetType().Name}.Transaction.json"));
+        private FileInfo TransactionFile => new(Path.Combine(DatabaseDirectory.FullName, $"{serializer.GetType().Name}.Transaction.json"));
 
         public void BeginTransaction(TimeSpan timeout)
         {
@@ -40,8 +40,8 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             // unique id for global mutex - Global prefix means it is global to the machine
             var mutexId = $@"Global\{nameof(DevOptimal)}.{nameof(SystemUtilities)}.{nameof(StateManagement)}:/{normalizedDatabaseID}";
 
-            lock (mutex)
-            {
+            //lock (mutex)
+            //{
                 if (mutex != null)
                 {
                     throw new InvalidOperationException("Transaction already in progress");
@@ -58,7 +58,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 #if NETSTANDARD2_0
                     mutex = MutexAcl.Create(false, mutexId, out var createdNew, securitySettings);
 #else
-                mutex = new Mutex(false, mutexId, out var createdNew, securitySettings);
+                    mutex = new Mutex(false, mutexId, out var createdNew, securitySettings);
 #endif
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -69,7 +69,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 {
                     throw new PlatformNotSupportedException();
                 }
-            }
+            //}
 
             try
             {
@@ -82,6 +82,30 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 // Log the fact that the mutex was abandoned in another process,
                 // it will still get acquired
+            }
+
+            var databaseDirectory = DatabaseFile.Directory;
+
+            if (!databaseDirectory.Exists)
+            {
+                databaseDirectory.Create();
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var directorySecurity = databaseDirectory.GetAccessControl();
+                    directorySecurity.AddAccessRule(new FileSystemAccessRule(
+                        identity: new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null),
+                        fileSystemRights: FileSystemRights.FullControl,
+                        inheritanceFlags: InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                        propagationFlags: PropagationFlags.NoPropagateInherit,
+                        type: AccessControlType.Allow));
+                    databaseDirectory.SetAccessControl(directorySecurity);
+                }
+            }
+
+            if (!DatabaseFile.Exists)
+            {
+                File.WriteAllText(DatabaseFile.FullName, "[]");
             }
 
             var stream = File.Open(DatabaseFile.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None);

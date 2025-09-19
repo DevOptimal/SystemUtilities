@@ -5,7 +5,7 @@ using System.IO;
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
     /// <summary>
-    /// Write an enumerable as a JSON array.
+    /// Write an enumerable as a JSON array. Implementing our own lightweight JSON writer to avoid dependencies.
     /// Reference: https://www.json.org/json-en.html
     /// </summary>
     internal class JsonWriter : StreamWriter

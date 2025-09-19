@@ -7,7 +7,7 @@ using System.Text;
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
     /// <summary>
-    /// Read a JSON array as an enumerable.
+    /// Reads a JSON array as an enumerable. Implementing our own lightweight JSON reader to avoid dependencies.
     /// Reference: https://www.json.org/json-en.html
     /// </summary>
     internal class JsonReader : StreamReader
@@ -37,7 +37,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             {
                 if (ch != ReadChar())
                 {
-                    throw new Exception();
+                    throw new JsonParsingException();
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
 
             if (PeekChar() == '.')
@@ -83,7 +83,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                 sb.Append(ReadChar());
                 if (!digitCharacters.Contains(PeekChar()))
                 {
-                    throw new Exception();
+                    throw new JsonParsingException();
                 }
 
                 do
@@ -105,7 +105,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 
                 if (!digitCharacters.Contains(PeekChar()))
                 {
-                    throw new Exception();
+                    throw new JsonParsingException();
                 }
 
                 do
@@ -136,7 +136,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new JsonParsingException();
             }
         }
 
@@ -188,7 +188,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                                 {
                                     if (!hexDigitCharacters.Contains(PeekChar()))
                                     {
-                                        throw new Exception();
+                                        throw new JsonParsingException();
                                     }
 
                                     hexStringBuilder.Append(ReadChar());
@@ -196,7 +196,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                                 sb.Append((char)int.Parse(hexStringBuilder.ToString(), System.Globalization.NumberStyles.HexNumber));
                                 break;
                             default:
-                                throw new Exception();
+                                throw new JsonParsingException();
                         }
                         break;
                     default:
@@ -247,7 +247,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                     AssertChar('n', 'u', 'l', 'l');
                     result = null;
                     break;
-                default: throw new Exception();
+                default: throw new JsonParsingException();
             }
 
             ReadWhiteSpace();
