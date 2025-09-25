@@ -5,17 +5,19 @@ using System.Diagnostics;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
-    internal class Caretaker<TOriginator, TMemento> : ISnapshot
+    internal class Caretaker<TOriginator, TMemento> : ICaretaker, ISnapshot
         where TOriginator : IOriginator<TMemento>
         where TMemento : IMemento
     {
         public string ID { get; set; }
 
+        public string ParentID { get; }
+
         public int ProcessID { get; set; }
 
         public DateTime ProcessStartTime { get; set; }
 
-        public Database Database { get; set; }
+        public Snapshotter Snapshotter { get; set; }
 
         public TOriginator Originator { get; set; }
 
@@ -23,62 +25,73 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         private bool disposedValue;
 
-        public Caretaker(TOriginator originator, Database database)
+        public Caretaker(TOriginator originator, Snapshotter snapshotter)
         {
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
-            Database = database ?? throw new ArgumentNullException(nameof(database));
+            Snapshotter = snapshotter ?? throw new ArgumentNullException(nameof(snapshotter));
             ID = originator.GetID();
+            ParentID = snapshotter.ID;
             var currentProcess = Process.GetCurrentProcess();
             ProcessID = currentProcess.Id;
             ProcessStartTime = currentProcess.StartTime;
 
-            Database.BeginTransaction(TimeSpan.FromSeconds(30));
-            try 
+            Snapshotter.BeginTransaction(TimeSpan.FromSeconds(30));
+            try
             {
-                Database.UpdateSnapshots(AddSnapshot);
-                Database.CommitTransaction();
+                Snapshotter.UpdateCaretakers(AddCaretaker);
+                Snapshotter.CommitTransaction();
             }
             catch
             {
-                Database.RollbackTransaction();
+                Snapshotter.RollbackTransaction();
                 throw;
             }
         }
 
         // For serialization
-        public Caretaker(string id, int processID, DateTime processStartTime, Database database, TOriginator originator, TMemento memento)
+        public Caretaker(string id, string parentID, int processID, DateTime processStartTime, Snapshotter snapshotter, TOriginator originator, TMemento memento)
         {
             ID = id ?? throw new ArgumentNullException(nameof(id));
+            ParentID = parentID ?? throw new ArgumentNullException(nameof(parentID));
             ProcessID = processID;
             ProcessStartTime = processStartTime;
-            Database = database ?? throw new ArgumentNullException(nameof(database));
+            Snapshotter = snapshotter ?? throw new ArgumentNullException(nameof(snapshotter));
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
             Memento = memento ?? throw new ArgumentNullException(nameof(memento));
         }
 
-        private IEnumerable<ISnapshot> AddSnapshot(IEnumerable<ISnapshot> snapshots)
+        public IEnumerable<ICaretaker> AddCaretaker(IEnumerable<ICaretaker> caretakers)
         {
-            foreach (var snapshot in snapshots)
+            foreach (var caretaker in caretakers)
             {
-                if (snapshot.ID == ID)
+                if (caretaker.ID == ID)
                 {
                     throw new ResourceLockedException();
                 }
-                yield return snapshot;
+                yield return caretaker;
             }
             Memento = Originator.GetState();
             yield return this;
         }
 
-        private IEnumerable<ISnapshot> RemoveSnapshot(IEnumerable<ISnapshot> snapshots)
+        public IEnumerable<ICaretaker> RemoveCaretaker(IEnumerable<ICaretaker> caretakers)
         {
-            foreach (var snapshot in snapshots)
+            foreach (var caretaker in caretakers)
             {
-                if (snapshot.ID != ID)
+                if (caretaker.ID == ID)
                 {
-                    yield return snapshot;
+                    Restore();
+                }
+                else
+                {
+                    yield return caretaker;
                 }
             }
+        }
+
+        public void Restore()
+        {
+            Originator.SetState(Memento);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -87,16 +100,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    Originator.SetState(Memento);
-                    Database.BeginTransaction(TimeSpan.FromSeconds(30));
+                    Snapshotter.BeginTransaction(TimeSpan.FromSeconds(30));
                     try
                     {
-                        Database.UpdateSnapshots(RemoveSnapshot);
-                        Database.CommitTransaction();
+                        Snapshotter.UpdateCaretakers(RemoveCaretaker);
+                        Snapshotter.CommitTransaction();
                     }
                     catch
                     {
-                        Database.RollbackTransaction();
+                        Snapshotter.RollbackTransaction();
                         throw;
                     }
                 }

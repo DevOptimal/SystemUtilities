@@ -8,23 +8,23 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
     /// Goal of this serializer is efficient resource usage by streaming snapshots instead of loading all of them into memory at once.
     /// To accomplish this, we parse and yield return snapshots as we read them from the JSON stream.
     /// </summary>
-    internal abstract class SnapshotSerializer
+    internal abstract class CaretakerSerializer
     {
         protected const string resourceTypePropertyName = "$resource-type";
 
-        public IEnumerable<ISnapshot> ReadSnapshots(JsonReader reader, Database database)
+        public IEnumerable<ICaretaker> ReadSnapshots(JsonReader reader, Snapshotter snapshotter)
         {
-            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToSnapshot(d, database));
+            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToSnapshot(d, snapshotter));
         }
 
-        public void WriteSnapshots(JsonWriter writer, IEnumerable<ISnapshot> snapshots)
+        public void WriteSnapshots(JsonWriter writer, IEnumerable<ICaretaker> snapshots)
         {
             writer.WriteArray(snapshots.Select(ConvertSnapshotToDictionary));
         }
 
-        protected abstract ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Database database);
+        protected abstract ICaretaker ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Snapshotter snapshotter);
 
-        protected abstract IDictionary<string, object> ConvertSnapshotToDictionary(ISnapshot snapshot);
+        protected abstract IDictionary<string, object> ConvertSnapshotToDictionary(ICaretaker snapshot);
 
         protected bool AsBoolean(object o)
         {

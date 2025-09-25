@@ -13,17 +13,18 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
     /// Goal of this serializer is efficient resource usage by streaming snapshots instead of loading all of them into memory at once.
     /// To accomplish this, we parse and yield return snapshots as we read them from the JSON stream.
     /// </summary>
-    internal class RegistrySnapshotSerializer(IRegistry registry) : SnapshotSerializer
+    internal class RegistryCaretakerSerializer(IRegistry registry) : CaretakerSerializer
     {
         private const string registryKeyResourceTypeName = "RegistryKey";
         private const string registryValueResourceTypeName = "RegistryValue";
 
-        protected override ISnapshot ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Database database)
+        protected override ICaretaker ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Snapshotter snapshotter)
         {
             // Get snapshot fields
-            var id = AsString(dictionary[nameof(ISnapshot.ID)]);
-            var processId = AsInteger(dictionary[nameof(ISnapshot.ProcessID)]);
-            var processStartTime = AsDateTime(dictionary[nameof(ISnapshot.ProcessStartTime)]);
+            var id = AsString(dictionary[nameof(ICaretaker.ID)]);
+            var parentId = AsString(dictionary[nameof(ICaretaker.ParentID)]);
+            var processId = AsInteger(dictionary[nameof(ICaretaker.ProcessID)]);
+            var processStartTime = AsDateTime(dictionary[nameof(ICaretaker.ProcessStartTime)]);
 
             switch (dictionary[resourceTypePropertyName])
             {
@@ -39,7 +40,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Exists = registryKeyExists
                     };
 
-                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, processId, processStartTime, database, registryKeyOriginator, registryKeyMemento);
+                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, parentId, processId, processStartTime, snapshotter, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
                     var registryValueHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryValueOriginator.Hive)]);
                     var registryValueView = AsEnum<RegistryView>(dictionary[nameof(RegistryValueOriginator.View)]);
@@ -55,21 +56,22 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Kind = registryValueKind
                     };
 
-                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, processId, processStartTime, database, registryValueOriginator, registryValueMemento);
+                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, parentId, processId, processStartTime, snapshotter, registryValueOriginator, registryValueMemento);
                 default: throw new Exception();
             }
         }
 
-        protected override IDictionary<string, object> ConvertSnapshotToDictionary(ISnapshot snapshot)
+        protected override IDictionary<string, object> ConvertSnapshotToDictionary(ICaretaker caretaker)
         {
             var result = new Dictionary<string, object>
             {
-                [nameof(ISnapshot.ID)] = snapshot.ID,
-                [nameof(ISnapshot.ProcessID)] = snapshot.ProcessID,
-                [nameof(ISnapshot.ProcessStartTime)] = snapshot.ProcessStartTime.Ticks
+                [nameof(ICaretaker.ID)] = caretaker.ID,
+                [nameof(ICaretaker.ParentID)] = caretaker.ParentID,
+                [nameof(ICaretaker.ProcessID)] = caretaker.ProcessID,
+                [nameof(ICaretaker.ProcessStartTime)] = caretaker.ProcessStartTime.Ticks
             };
 
-            switch (snapshot)
+            switch (caretaker)
             {
                 case Caretaker<RegistryKeyOriginator, RegistryKeyMemento> registryKeyCaretaker:
                     result[resourceTypePropertyName] = registryKeyResourceTypeName;

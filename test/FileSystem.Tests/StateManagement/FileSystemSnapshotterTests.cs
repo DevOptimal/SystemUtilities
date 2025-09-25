@@ -1,19 +1,23 @@
 ﻿using DevOptimal.SystemUtilities.FileSystem.StateManagement;
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
 {
     [TestClass]
     public class FileSystemSnapshotterTests : MockFileSystemTestBase
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void RevertsDirectoryCreation()
         {
             var path = @"C:\foo\bar";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotDirectory(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotDirectory(path))
             {
                 fileSystem.CreateDirectory(path);
 
@@ -28,8 +32,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         {
             var path = @"C:\foo\bar";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotDirectory(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotDirectory(path))
             {
                 fileSystem.CreateDirectory(path);
                 fileSystem.CreateDirectory(Path.Combine(path, "blah"));
@@ -45,8 +49,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             var path = @"C:\foo\bar";
             fileSystem.CreateDirectory(path);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotDirectory(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotDirectory(path))
             {
                 fileSystem.DeleteDirectory(path, recursive: true);
 
@@ -63,8 +67,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
             WriteBytes(path, expectedFileBytes);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotFile(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotFile(path))
             {
                 WriteBytes(path, Guid.NewGuid().ToByteArray());
             }
@@ -77,8 +81,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         {
             var path = @"C:\foo\bar.dat";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotFile(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotFile(path))
             {
                 fileSystem.CreateFile(path);
             }
@@ -93,8 +97,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
             WriteBytes(path, expectedFileBytes);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotFile(path))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotFile(path))
             {
                 fileSystem.DeleteFile(path);
             }
@@ -113,13 +117,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             var path2 = @"C:\foo\baz.dat";
             WriteBytes(path2, expectedFileBytes);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (var snapshot = systemStateManager.SnapshotFile(path))
+            using var snapshotter = CreateSnapshotter();
+            using (var snapshot = snapshotter.SnapshotFile(path))
             {
                 fileSystem.DeleteFile(path);
                 Assert.IsFalse(fileSystem.FileExists(path));
 
-                using (var snapshot2 = systemStateManager.SnapshotFile(path2))
+                using (var snapshot2 = snapshotter.SnapshotFile(path2))
                 {
                     fileSystem.DeleteFile(path2);
                     Assert.IsFalse(fileSystem.FileExists(path2));
@@ -131,9 +135,48 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
         }
 
+        [TestMethod]
+        public void ConcurrentSnapshottersCanSnapshotFiles()
+        {
+            var concurrentThreads = 100;
+
+            var filePaths = new string[concurrentThreads];
+            var expectedContent = new byte[concurrentThreads][];
+
+            for (var i = 0; i < concurrentThreads; i++)
+            {
+                var file = $@"C:\file{i}.txt";
+                fileSystem.CreateFile(file);
+                filePaths[i] = file;
+
+                var content = Guid.NewGuid().ToByteArray();
+                using var stream = fileSystem.OpenFile(file, FileMode.Open, FileAccess.Write, FileShare.None);
+                stream.Write(content, 0, content.Length);
+                expectedContent[i] = content;
+            }
+
+            Parallel.For(0, concurrentThreads, i =>
+            {
+                var file = filePaths[i];
+                using var snapshotter = CreateSnapshotter();
+                using (var caretaker = snapshotter.SnapshotFile(file))
+                {
+                    fileSystem.DeleteFile(file);
+                    Assert.IsFalse(fileSystem.FileExists(file));
+                }
+
+                Assert.IsTrue(fileSystem.FileExists(file));
+                var content = expectedContent[i];
+                using var stream = fileSystem.OpenFile(file, FileMode.Open, FileAccess.Read, FileShare.None);
+                var readContent = new byte[content.Length];
+                stream.ReadExactly(readContent);
+                Assert.IsTrue(readContent.SequenceEqual(content));
+            });
+        }
+
         private FileSystemSnapshotter CreateSnapshotter()
         {
-            return new FileSystemSnapshotter(fileSystem);
+            return new FileSystemSnapshotter(fileSystem, new DirectoryInfo(Path.Join(TestContext.ResultsDirectory, "Persistence")));
         }
 
         private void WriteBytes(string path, byte[] bytes)

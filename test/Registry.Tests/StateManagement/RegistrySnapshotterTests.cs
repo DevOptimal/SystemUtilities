@@ -9,6 +9,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
     [SupportedOSPlatform("windows")]
     public class RegistrySnapshotterTests : MockRegistryTestBase
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void RevertsRegistryKeyCreation()
         {
@@ -16,8 +18,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var view = RegistryView.Default;
             var subKey = @"SOTFWARE\Microsoft\Windows";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryKey(hive, view, subKey))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryKey(hive, view, subKey))
             {
                 registry.CreateRegistryKey(hive, view, subKey);
             }
@@ -32,8 +34,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var view = RegistryView.Default;
             var subKey = @"SOTFWARE\Microsoft\Windows";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryKey(hive, view, subKey))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryKey(hive, view, subKey))
             {
                 registry.CreateRegistryKey(hive, view, subKey);
                 registry.CreateRegistryKey(hive, view, Path.Combine(subKey, "foo"));
@@ -52,8 +54,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
 
             registry.CreateRegistryKey(hive, view, subKey);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryKey(hive, view, subKey))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryKey(hive, view, subKey))
             {
                 registry.DeleteRegistryKey(hive, view, subKey, recursive: true);
             }
@@ -74,8 +76,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var kind = RegistryValueKind.String;
             registry.SetRegistryValue(hive, view, subKey, name, value, kind);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, name))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, name))
             {
                 registry.SetRegistryValue(hive, view, subKey, name, 10, RegistryValueKind.DWord);
             }
@@ -96,8 +98,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
 
             var name = "foo";
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, name))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, name))
             {
                 registry.SetRegistryValue(hive, view, subKey, name, "bar", RegistryValueKind.String);
             }
@@ -118,8 +120,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var kind = RegistryValueKind.String;
             registry.SetRegistryValue(hive, view, subKey, name, value, kind);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, name))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, name))
             {
                 registry.DeleteRegistryValue(hive, view, subKey, name);
             }
@@ -142,8 +144,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var kind = RegistryValueKind.String;
             registry.SetRegistryValue(hive, view, subKey, null, value, kind);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, null))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, null))
             {
                 registry.SetRegistryValue(hive, view, subKey, null, 10, RegistryValueKind.DWord);
             }
@@ -162,8 +164,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var subKey = @"SOFTWARE\Microsoft\Windows";
             registry.CreateRegistryKey(hive, view, subKey);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, null))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, null))
             {
                 registry.SetRegistryValue(hive, view, subKey, null, "bar", RegistryValueKind.String);
             }
@@ -183,8 +185,8 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             var kind = RegistryValueKind.String;
             registry.SetRegistryValue(hive, view, subKey, null, value, kind);
 
-            using var systemStateManager = CreateSnapshotter();
-            using (systemStateManager.SnapshotRegistryValue(hive, view, subKey, null))
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotRegistryValue(hive, view, subKey, null))
             {
                 registry.DeleteRegistryValue(hive, view, subKey, null);
             }
@@ -197,7 +199,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
 
         private RegistrySnapshotter CreateSnapshotter()
         {
-            return new RegistrySnapshotter(registry);
+            return new RegistrySnapshotter(registry, new DirectoryInfo(Path.Join(TestContext.ResultsDirectory, "Persistence")));
         }
     }
 }
