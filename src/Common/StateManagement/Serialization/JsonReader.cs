@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
@@ -257,7 +255,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 
         public object[] ReadArray()
         {
-            return EnumerateArray().ToArray();
+            return [.. EnumerateArray()];
         }
 
         public IEnumerable<object> EnumerateArray()

@@ -81,6 +81,8 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
         }
 
+        internal void BeginTransaction() => BeginTransaction(TimeSpan.FromSeconds(30));
+
         internal void BeginTransaction(TimeSpan timeout)
         {
             try
@@ -122,7 +124,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
             var stream = File.Open(databaseFile.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None);
             reader = new JsonReader(stream);
-            transaction = serializer.ReadSnapshots(reader, this);
+            transaction = serializer.ReadCaretakers(reader, this);
         }
 
         internal void UpdateCaretakers(Func<IEnumerable<ICaretaker>, IEnumerable<ICaretaker>> updateFunction)
@@ -159,7 +161,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             using (var writer = new JsonWriter(stream))
             using (reader)
             {
-                serializer.WriteSnapshots(writer, transaction);
+                serializer.WriteCaretakers(writer, transaction);
             }
             reader = null;
             transaction = null;
@@ -177,7 +179,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    BeginTransaction(TimeSpan.FromSeconds(30));
+                    BeginTransaction();
                     try
                     {
                         UpdateCaretakers(RestoreCaretakers);
@@ -285,7 +287,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         public void RestoreAbandonedSnapshots()
         {
-            BeginTransaction(TimeSpan.FromSeconds(30));
+            BeginTransaction();
             try
             {
                 UpdateCaretakers(RestoreAbandonedCaretakers);

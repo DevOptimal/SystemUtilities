@@ -5,26 +5,26 @@ using System.Linq;
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
     /// <summary>
-    /// Goal of this serializer is efficient resource usage by streaming snapshots instead of loading all of them into memory at once.
-    /// To accomplish this, we parse and yield return snapshots as we read them from the JSON stream.
+    /// Goal of this serializer is efficient resource usage by streaming caretakers instead of loading all of them into memory at once.
+    /// To accomplish this, we parse and yield return caretakers as we read them from the JSON stream.
     /// </summary>
     internal abstract class CaretakerSerializer
     {
         protected const string resourceTypePropertyName = "$resource-type";
 
-        public IEnumerable<ICaretaker> ReadSnapshots(JsonReader reader, Snapshotter snapshotter)
+        public IEnumerable<ICaretaker> ReadCaretakers(JsonReader reader, Snapshotter snapshotter)
         {
-            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToSnapshot(d, snapshotter));
+            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToCaretaker(d, snapshotter));
         }
 
-        public void WriteSnapshots(JsonWriter writer, IEnumerable<ICaretaker> snapshots)
+        public void WriteCaretakers(JsonWriter writer, IEnumerable<ICaretaker> caretakers)
         {
-            writer.WriteArray(snapshots.Select(ConvertSnapshotToDictionary));
+            writer.WriteArray(caretakers.Select(ConvertCaretakerToDictionary));
         }
 
-        protected abstract ICaretaker ConvertDictionaryToSnapshot(IDictionary<string, object> dictionary, Snapshotter snapshotter);
+        protected abstract ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, Snapshotter snapshotter);
 
-        protected abstract IDictionary<string, object> ConvertSnapshotToDictionary(ICaretaker snapshot);
+        protected abstract IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker);
 
         protected bool AsBoolean(object o)
         {

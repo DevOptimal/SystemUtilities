@@ -35,7 +35,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             ProcessID = currentProcess.Id;
             ProcessStartTime = currentProcess.StartTime;
 
-            Snapshotter.BeginTransaction(TimeSpan.FromSeconds(30));
+            Snapshotter.BeginTransaction();
             try
             {
                 Snapshotter.UpdateCaretakers(AddCaretaker);
@@ -100,7 +100,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    Snapshotter.BeginTransaction(TimeSpan.FromSeconds(30));
+                    Snapshotter.BeginTransaction();
                     try
                     {
                         Snapshotter.UpdateCaretakers(RemoveCaretaker);
