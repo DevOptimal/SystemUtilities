@@ -1,7 +1,10 @@
 ﻿using DevOptimal.SystemUtilities.Common.StateManagement.Serialization;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -159,6 +162,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 serializer.WriteSnapshots(writer, transaction);
             }
             reader = null;
+            transaction = null;
             databaseFile.Delete();
             File.Move(transactionFile.FullName, databaseFile.FullName);
             lock (mutex)
@@ -211,16 +215,86 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         private IEnumerable<ICaretaker> RestoreCaretakers(IEnumerable<ICaretaker> caretakers)
         {
+            var exceptions = new List<Exception>();
             foreach (var caretaker in caretakers)
             {
                 if (caretaker.ParentID == ID)
                 {
-                    caretaker.Restore();
+                    try
+                    {
+                        caretaker.Restore();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
                 }
                 else
                 {
                     yield return caretaker;
                 }
+            }
+            if (exceptions.Any())
+            {
+                new AggregateException($"Unable to restore {exceptions.Count} snapshot(s).", exceptions);
+            }
+        }
+
+        private IEnumerable<ICaretaker> RestoreAbandonedCaretakers(IEnumerable<ICaretaker> caretakers)
+        {
+            // Create a dictionary that maps process IDs to process start times, which will be used to uniquely identify a currently running process.
+            // A null value indicates that the current process does not have permission to the corresponding process - try rerunning in an elevated process.
+            var processes = new Dictionary<int, DateTime?>();
+            foreach (var process in Process.GetProcesses())
+            {
+                try
+                {
+                    processes[process.Id] = process.StartTime;
+                }
+                catch (Win32Exception)
+                {
+                    processes[process.Id] = null;
+                }
+                catch (InvalidOperationException) { } // The process has already exited, so don't add it.
+            }
+
+            var exceptions = new List<Exception>();
+            foreach (var caretaker in caretakers)
+            {
+                if (!(processes.ContainsKey(caretaker.ProcessID) && (processes[caretaker.ProcessID] == caretaker.ProcessStartTime || processes[caretaker.ProcessID] == null)))
+                {
+                    try
+                    {
+                        caretaker.Restore();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                }
+                else
+                {
+                    yield return caretaker;
+                }
+            }
+            if (exceptions.Any())
+            {
+                new AggregateException($"Unable to restore {exceptions.Count} abandoned snapshot(s).", exceptions);
+            }
+        }
+
+        public void RestoreAbandonedSnapshots()
+        {
+            BeginTransaction(TimeSpan.FromSeconds(30));
+            try
+            {
+                UpdateCaretakers(RestoreAbandonedCaretakers);
+                CommitTransaction();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
             }
         }
     }

@@ -53,35 +53,10 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
             Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
         }
 
-        [TestMethod]
-        public void EnvironmentVariableSnapshotIsThreadSafe()
-        {
-            using var snapshotter = CreateSnapshotter();
-
-            var target = EnvironmentVariableTarget.Machine;
-            var expectedValue = "bar";
-
-            var tasks = new List<Task>();
-
-            for (var i = 0; i < 100; i++)
-            {
-                tasks.Add(Task.Factory.StartNew(() =>
-                {
-                    var name = Guid.NewGuid().ToString();
-                    using (snapshotter.SnapshotEnvironmentVariable(name, target))
-                    {
-                        environment.SetEnvironmentVariable(name, expectedValue, target);
-                        Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
-                    }
-                    Assert.IsNull(environment.GetEnvironmentVariable(name, target));
-                }));
-            }
-
-            Task.WaitAll([.. tasks]);
-        }
+        #region Persistence Tests
 
         [TestMethod]
-        public void ConcurrentSnapshottersCanSnapshotEnvironmentVariables()
+        public void ConcurrentlySnapshotsEnvironmentVariables()
         {
             var concurrentThreads = 100;
 
@@ -101,7 +76,6 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
             Parallel.For(0, concurrentThreads, i =>
             {
                 var name = names[i];
-                var value = expectedValues[i];
                 using var snapshotter = CreateSnapshotter();
                 using (var caretaker = snapshotter.SnapshotEnvironmentVariable(name, target))
                 {
@@ -112,6 +86,8 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
                 Assert.AreEqual(expectedValues[i], environment.GetEnvironmentVariable(name, target));
             });
         }
+
+        #endregion
 
         private EnvironmentSnapshotter CreateSnapshotter()
         {

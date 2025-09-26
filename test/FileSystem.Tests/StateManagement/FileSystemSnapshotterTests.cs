@@ -135,44 +135,76 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
         }
 
+        #region Persistence Tests
+
         [TestMethod]
-        public void ConcurrentSnapshottersCanSnapshotFiles()
+        public void ConcurrentlySnapshotsDirectories()
         {
             var concurrentThreads = 100;
 
-            var filePaths = new string[concurrentThreads];
+            var paths = new string[concurrentThreads];
+
+            for (var i = 0; i < concurrentThreads; i++)
+            {
+                var path = $@"C:\file{i}";
+                fileSystem.CreateDirectory(path);
+                paths[i] = path;
+            }
+
+            Parallel.For(0, concurrentThreads, i =>
+            {
+                var path = paths[i];
+                using var snapshotter = CreateSnapshotter();
+                using (var caretaker = snapshotter.SnapshotDirectory(path))
+                {
+                    fileSystem.DeleteDirectory(path, recursive: true);
+                    Assert.IsFalse(fileSystem.DirectoryExists(path));
+                }
+
+                Assert.IsTrue(fileSystem.DirectoryExists(path));
+            });
+        }
+
+        [TestMethod]
+        public void ConcurrentlySnapshotsFiles()
+        {
+            var concurrentThreads = 100;
+
+            var paths = new string[concurrentThreads];
             var expectedContent = new byte[concurrentThreads][];
 
             for (var i = 0; i < concurrentThreads; i++)
             {
-                var file = $@"C:\file{i}.txt";
-                fileSystem.CreateFile(file);
-                filePaths[i] = file;
+                var path = $@"C:\file{i}.txt";
+                fileSystem.CreateFile(path);
+                paths[i] = path;
 
                 var content = Guid.NewGuid().ToByteArray();
-                using var stream = fileSystem.OpenFile(file, FileMode.Open, FileAccess.Write, FileShare.None);
+                using var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Write, FileShare.None);
                 stream.Write(content, 0, content.Length);
                 expectedContent[i] = content;
             }
 
             Parallel.For(0, concurrentThreads, i =>
             {
-                var file = filePaths[i];
+                var path = paths[i];
                 using var snapshotter = CreateSnapshotter();
-                using (var caretaker = snapshotter.SnapshotFile(file))
+                using (var caretaker = snapshotter.SnapshotFile(path))
                 {
-                    fileSystem.DeleteFile(file);
-                    Assert.IsFalse(fileSystem.FileExists(file));
+                    fileSystem.DeleteFile(path);
+                    Assert.IsFalse(fileSystem.FileExists(path));
                 }
 
-                Assert.IsTrue(fileSystem.FileExists(file));
+                Assert.IsTrue(fileSystem.FileExists(path));
                 var content = expectedContent[i];
-                using var stream = fileSystem.OpenFile(file, FileMode.Open, FileAccess.Read, FileShare.None);
+                using var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.None);
                 var readContent = new byte[content.Length];
                 stream.ReadExactly(readContent);
                 Assert.IsTrue(readContent.SequenceEqual(content));
             });
         }
+
+        #endregion
 
         private FileSystemSnapshotter CreateSnapshotter()
         {

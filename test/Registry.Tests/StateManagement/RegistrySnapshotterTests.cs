@@ -1,7 +1,9 @@
 ﻿using DevOptimal.SystemUtilities.Registry.StateManagement;
 using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
 {
@@ -196,6 +198,79 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             Assert.AreEqual(value, actualValue);
             Assert.AreEqual(kind, actualKind);
         }
+
+        #region Persistence Tests
+
+        [TestMethod]
+        public void ConcurrentlySnapshotsRegistryKeys()
+        {
+            var concurrentThreads = 100;
+
+            var hive = RegistryHive.LocalMachine;
+            var view = RegistryView.Default;
+            var key = @"SOFTWARE\Microsoft\Windows";
+
+            var subKeys = new string[concurrentThreads];
+
+            for (var i = 0; i < concurrentThreads; i++)
+            {
+                var subKey = @$"{key}\subKey{i}";
+                registry.CreateRegistryKey(hive, view, subKey);
+                subKeys[i] = subKey;
+            }
+
+            Parallel.For(0, concurrentThreads, i =>
+            {
+                var subKey = subKeys[i];
+                using var snapshotter = CreateSnapshotter();
+                using (var caretaker = snapshotter.SnapshotRegistryKey(hive, view, subKey))
+                {
+                    registry.DeleteRegistryKey(hive, view, subKey, recursive: true);
+                    Assert.IsFalse(registry.RegistryKeyExists(hive, view, subKey));
+                }
+
+                Assert.IsTrue(registry.RegistryKeyExists(hive, view, subKey));
+            });
+        }
+
+        [TestMethod]
+        public void ConcurrentlySnapshotsRegistryValues()
+        {
+            var concurrentThreads = 100;
+
+            var hive = RegistryHive.LocalMachine;
+            var view = RegistryView.Default;
+            var subKey = @"SOFTWARE\Microsoft\Windows";
+            registry.CreateRegistryKey(hive, view, subKey);
+
+            var kind = RegistryValueKind.String;
+
+            var names = new string[concurrentThreads];
+            var expectedValues = new string[concurrentThreads];
+            for (var i = 0; i < concurrentThreads; i++)
+            {
+                var name = $"variable{i}";
+                var value = Guid.NewGuid().ToString();
+                registry.SetRegistryValue(hive, view, subKey, name, value, kind);
+                names[i] = name;
+                expectedValues[i] = value;
+            }
+
+            Parallel.For(0, concurrentThreads, i =>
+            {
+                var name = names[i];
+                using var snapshotter = CreateSnapshotter();
+                using (var caretaker = snapshotter.SnapshotRegistryValue(hive, view, subKey, name))
+                {
+                    registry.DeleteRegistryValue(hive, view, subKey, name);
+                    Assert.IsFalse(registry.RegistryValueExists(hive, view, subKey, name));
+                }
+
+                Assert.AreEqual(expectedValues[i], registry.GetRegistryValue(hive, view, subKey, name).value);
+            });
+        }
+
+        #endregion
 
         private RegistrySnapshotter CreateSnapshotter()
         {
