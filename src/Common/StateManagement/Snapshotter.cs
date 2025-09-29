@@ -5,172 +5,29 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using System.Threading;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
     // TODO: Can we combine the database and snapshotter into one class?
     public abstract class Snapshotter : IDisposable
     {
-        internal string ID { get; set; }
-
-        protected static DirectoryInfo defaultPersistenceDirectory = new(
+        protected static readonly DirectoryInfo defaultPersistenceDirectory = new(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 nameof(DevOptimal),
                 nameof(SystemUtilities),
                 nameof(StateManagement)));
 
-        private Mutex mutex;
-        private readonly CaretakerSerializer serializer;
+        protected string ID { get; set; }
 
-        private JsonReader reader;
-        private IEnumerable<ICaretaker> transaction;
-        private bool disposedValue;
+        protected bool disposedValue;
 
-        private readonly FileInfo databaseFile;
-        private readonly FileInfo transactionFile;
+        internal readonly DatabaseConnection connection;
 
         internal Snapshotter(CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
-            if (persistenceDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(persistenceDirectory));
-            }
-
-            this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{GetType().Name}.json"));
-            transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{GetType().Name}.Transaction.json"));
             ID = Guid.NewGuid().ToString();
-
-            // Get normalized file path
-            var normalizedDatabaseID = Path.GetFullPath(databaseFile.FullName).Replace('\\', '/');
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                normalizedDatabaseID = normalizedDatabaseID.ToLower();
-            }
-
-            // unique id for global mutex - Global prefix means it is global to the machine
-            var mutexId = $@"Global\{nameof(DevOptimal)}.{nameof(SystemUtilities)}.{nameof(StateManagement)}:/{normalizedDatabaseID}";
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // edited by Jeremy Wiebe to add example of setting up security for multi-user usage
-                // edited by 'Marc' to work also on localized systems (don't use just "Everyone") 
-                var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null), MutexRights.FullControl, AccessControlType.Allow);
-                var securitySettings = new MutexSecurity();
-                securitySettings.AddAccessRule(allowEveryoneRule);
-
-                // edited by MasonGZhwiti to prevent race condition on security settings via VanNguyen
-#if NETSTANDARD2_0
-                mutex = MutexAcl.Create(false, mutexId, out var createdNew, securitySettings);
-#else
-                mutex = new Mutex(false, mutexId, out var createdNew, securitySettings);
-#endif
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                mutex = new Mutex(false, mutexId, out var createdNew);
-            }
-            else
-            {
-                throw new PlatformNotSupportedException();
-            }
-        }
-
-        internal void BeginTransaction() => BeginTransaction(TimeSpan.FromSeconds(30));
-
-        internal void BeginTransaction(TimeSpan timeout)
-        {
-            try
-            {
-                if (!mutex.WaitOne(timeout, exitContext: false))
-                {
-                    throw new TimeoutException("Timeout waiting for exclusive access");
-                }
-            }
-            catch (AbandonedMutexException)
-            {
-                // Log the fact that the mutex was abandoned in another process,
-                // it will still get acquired
-            }
-
-            var databaseDirectory = databaseFile.Directory;
-
-            if (!databaseDirectory.Exists)
-            {
-                databaseDirectory.Create();
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var directorySecurity = databaseDirectory.GetAccessControl();
-                    directorySecurity.AddAccessRule(new FileSystemAccessRule(
-                        identity: new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null),
-                        fileSystemRights: FileSystemRights.FullControl,
-                        inheritanceFlags: InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                        propagationFlags: PropagationFlags.NoPropagateInherit,
-                        type: AccessControlType.Allow));
-                    databaseDirectory.SetAccessControl(directorySecurity);
-                }
-            }
-
-            if (!databaseFile.Exists)
-            {
-                File.WriteAllText(databaseFile.FullName, "[]");
-            }
-
-            var stream = File.Open(databaseFile.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None);
-            reader = new JsonReader(stream);
-            transaction = serializer.ReadCaretakers(reader, this);
-        }
-
-        internal void UpdateCaretakers(Func<IEnumerable<ICaretaker>, IEnumerable<ICaretaker>> updateFunction)
-        {
-            if (mutex == null)
-            {
-                throw new InvalidOperationException("No transaction in progress");
-            }
-            transaction = updateFunction(transaction);
-        }
-
-        internal void RollbackTransaction()
-        {
-            if (mutex == null)
-            {
-                throw new InvalidOperationException("No transaction in progress");
-            }
-            reader.Dispose();
-            reader = null;
-            transaction = null;
-            lock (mutex)
-            {
-                mutex.ReleaseMutex();
-            }
-        }
-
-        internal void CommitTransaction()
-        {
-            if (mutex == null)
-            {
-                throw new InvalidOperationException("No transaction in progress");
-            }
-            using (var stream = File.Open(transactionFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (var writer = new JsonWriter(stream))
-            using (reader)
-            {
-                serializer.WriteCaretakers(writer, transaction);
-            }
-            reader = null;
-            transaction = null;
-            databaseFile.Delete();
-            File.Move(transactionFile.FullName, databaseFile.FullName);
-            lock (mutex)
-            {
-                mutex.ReleaseMutex();
-            }
+            connection = new DatabaseConnection(serializer, persistenceDirectory);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -179,20 +36,19 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    BeginTransaction();
+                    connection.BeginTransaction();
                     try
                     {
-                        UpdateCaretakers(RestoreCaretakers);
-                        CommitTransaction();
+                        connection.UpdateCaretakers(RestoreCaretakers);
+                        connection.CommitTransaction();
                     }
                     catch
                     {
-                        RollbackTransaction();
+                        connection.RollbackTransaction();
                         throw;
                     }
 
-                    mutex.Dispose();
-                    mutex = null;
+                    connection.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
@@ -287,15 +143,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         public void RestoreAbandonedSnapshots()
         {
-            BeginTransaction();
+            connection.BeginTransaction();
             try
             {
-                UpdateCaretakers(RestoreAbandonedCaretakers);
-                CommitTransaction();
+                connection.UpdateCaretakers(RestoreAbandonedCaretakers);
+                connection.CommitTransaction();
             }
             catch
             {
-                RollbackTransaction();
+                connection.RollbackTransaction();
                 throw;
             }
         }

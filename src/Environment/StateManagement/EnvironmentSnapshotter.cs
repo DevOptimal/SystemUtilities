@@ -24,7 +24,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
         public ISnapshot SnapshotEnvironmentVariable(string name, EnvironmentVariableTarget target)
         {
             var originator = new EnvironmentVariableOriginator(name, target, environment);
-            var snapshot = new Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>(originator, this);
+            var snapshot = new Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>(originator, connection);
             return snapshot;
         }
     }

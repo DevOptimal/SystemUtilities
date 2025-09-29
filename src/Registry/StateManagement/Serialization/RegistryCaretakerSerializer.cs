@@ -18,7 +18,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         private const string registryKeyResourceTypeName = "RegistryKey";
         private const string registryValueResourceTypeName = "RegistryValue";
 
-        protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, Snapshotter snapshotter)
+        protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
             // Get caretaker fields
             var id = AsString(dictionary[nameof(ICaretaker.ID)]);
@@ -40,7 +40,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Exists = registryKeyExists
                     };
 
-                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, parentId, processId, processStartTime, snapshotter, registryKeyOriginator, registryKeyMemento);
+                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, parentId, processId, processStartTime, connection, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
                     var registryValueHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryValueOriginator.Hive)]);
                     var registryValueView = AsEnum<RegistryView>(dictionary[nameof(RegistryValueOriginator.View)]);
@@ -56,7 +56,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Kind = registryValueKind
                     };
 
-                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, parentId, processId, processStartTime, snapshotter, registryValueOriginator, registryValueMemento);
+                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
                 default: throw new Exception();
             }
         }

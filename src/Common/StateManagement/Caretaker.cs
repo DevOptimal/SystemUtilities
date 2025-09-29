@@ -17,45 +17,45 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         public DateTime ProcessStartTime { get; set; }
 
-        public Snapshotter Snapshotter { get; set; }
-
         public TOriginator Originator { get; set; }
 
         public TMemento Memento { get; set; }
 
+        public DatabaseConnection Connection { get; set; }
+
         private bool disposedValue;
 
-        public Caretaker(TOriginator originator, Snapshotter snapshotter)
+        public Caretaker(TOriginator originator, DatabaseConnection connection)
         {
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
-            Snapshotter = snapshotter ?? throw new ArgumentNullException(nameof(snapshotter));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             ID = originator.GetID();
-            ParentID = snapshotter.ID;
+            ParentID = connection.ID;
             var currentProcess = Process.GetCurrentProcess();
             ProcessID = currentProcess.Id;
             ProcessStartTime = currentProcess.StartTime;
 
-            Snapshotter.BeginTransaction();
+            Connection.BeginTransaction();
             try
             {
-                Snapshotter.UpdateCaretakers(AddCaretaker);
-                Snapshotter.CommitTransaction();
+                Connection.UpdateCaretakers(AddCaretaker);
+                Connection.CommitTransaction();
             }
             catch
             {
-                Snapshotter.RollbackTransaction();
+                Connection.RollbackTransaction();
                 throw;
             }
         }
 
         // For serialization
-        public Caretaker(string id, string parentID, int processID, DateTime processStartTime, Snapshotter snapshotter, TOriginator originator, TMemento memento)
+        public Caretaker(string id, string parentID, int processID, DateTime processStartTime, DatabaseConnection connection, TOriginator originator, TMemento memento)
         {
             ID = id ?? throw new ArgumentNullException(nameof(id));
             ParentID = parentID ?? throw new ArgumentNullException(nameof(parentID));
             ProcessID = processID;
             ProcessStartTime = processStartTime;
-            Snapshotter = snapshotter ?? throw new ArgumentNullException(nameof(snapshotter));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
             Memento = memento ?? throw new ArgumentNullException(nameof(memento));
         }
@@ -100,15 +100,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    Snapshotter.BeginTransaction();
+                    Connection.BeginTransaction();
                     try
                     {
-                        Snapshotter.UpdateCaretakers(RemoveCaretaker);
-                        Snapshotter.CommitTransaction();
+                        Connection.UpdateCaretakers(RemoveCaretaker);
+                        Connection.CommitTransaction();
                     }
                     catch
                     {
-                        Snapshotter.RollbackTransaction();
+                        Connection.RollbackTransaction();
                         throw;
                     }
                 }

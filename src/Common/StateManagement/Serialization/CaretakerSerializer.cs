@@ -12,9 +12,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
     {
         protected const string resourceTypePropertyName = "$resource-type";
 
-        public IEnumerable<ICaretaker> ReadCaretakers(JsonReader reader, Snapshotter snapshotter)
+        public IEnumerable<ICaretaker> ReadCaretakers(JsonReader reader, DatabaseConnection connection)
         {
-            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToCaretaker(d, snapshotter));
+            return reader.EnumerateArray().Cast<IDictionary<string, object>>().Select(d => ConvertDictionaryToCaretaker(d, connection));
         }
 
         public void WriteCaretakers(JsonWriter writer, IEnumerable<ICaretaker> caretakers)
@@ -22,7 +22,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             writer.WriteArray(caretakers.Select(ConvertCaretakerToDictionary));
         }
 
-        protected abstract ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, Snapshotter snapshotter);
+        protected abstract ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection);
 
         protected abstract IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker);
 

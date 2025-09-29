@@ -14,7 +14,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
     {
         private const string environmentVariableResourceTypeName = "EnvironmentVariable";
 
-        protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, Snapshotter snapshotter)
+        protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
             // Get caretaker fields
             var id = AsString(dictionary[nameof(ICaretaker.ID)]);
@@ -35,7 +35,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                         Value = environmentVariableValue
                     };
 
-                    return new Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>(id, parentId, processId, processStartTime, snapshotter, environmentVariableOriginator, environmentVariableMemento);
+                    return new Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>(id, parentId, processId, processStartTime, connection, environmentVariableOriginator, environmentVariableMemento);
                 default: throw new Exception();
             }
         }
