@@ -36,7 +36,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                         Exists = directoryExists
                     };
 
-                    return new Caretaker<DirectoryOriginator, DirectoryMemento>(id, parentId, processId, processStartTime, connection, directoryOriginator, directoryMemento);
+                    return new DirectoryCaretaker(id, parentId, processId, processStartTime, connection, directoryOriginator, directoryMemento);
                 case fileResourceTypeName:
                     var filePath = AsString(dictionary[nameof(FileOriginator.Path)]);
                     var fileHash = AsString(dictionary[nameof(FileMemento.Hash)]);
@@ -47,7 +47,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                         Hash = fileHash
                     };
 
-                    return new Caretaker<FileOriginator, FileMemento>(id, parentId, processId, processStartTime, connection, fileOriginator, fileMemento);
+                    return new FileCaretaker(id, parentId, processId, processStartTime, connection, fileOriginator, fileMemento);
                 default: throw new Exception();
             }
         }
@@ -64,12 +64,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
 
             switch (caretaker)
             {
-                case Caretaker<DirectoryOriginator, DirectoryMemento> directoryCaretaker:
+                case DirectoryCaretaker directoryCaretaker:
                     result[resourceTypePropertyName] = directoryResourceTypeName;
                     result[nameof(DirectoryOriginator.Path)] = directoryCaretaker.Originator.Path;
                     result[nameof(DirectoryMemento.Exists)] = directoryCaretaker.Memento.Exists;
                     break;
-                case Caretaker<FileOriginator, FileMemento> fileCaretaker:
+                case FileCaretaker fileCaretaker:
                     result[resourceTypePropertyName] = fileResourceTypeName;
                     result[nameof(FileOriginator.Path)] = fileCaretaker.Originator.Path;
                     result[nameof(FileMemento.Hash)] = fileCaretaker.Memento.Hash;

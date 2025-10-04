@@ -13,23 +13,26 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
 
         public IEnvironment Environment { get; } = environment ?? throw new ArgumentNullException(nameof(environment));
 
-        public string GetID()
+        public string ID
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            get
             {
-                return $@"{Target}\{Name}";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return $@"{Target}\{Name}".ToLower();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return $@"{Target}\{Name}";
-            }
-            else
-            {
-                throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return $@"{Target}\{Name}";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return $@"{Target}\{Name}".ToLower();
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    return $@"{Target}\{Name}";
+                }
+                else
+                {
+                    throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+                }
             }
         }
 

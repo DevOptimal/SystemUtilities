@@ -2,7 +2,6 @@
 using DevOptimal.SystemUtilities.Registry.Abstractions;
 using Microsoft.Win32;
 using System;
-using System.Xml.Linq;
 
 namespace DevOptimal.SystemUtilities.Registry.StateManagement
 {
@@ -18,10 +17,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 
         public IRegistry Registry { get; } = registry ?? throw new ArgumentNullException(nameof(registry));
 
-        public string GetID()
-        {
-            return $@"{Hive}\{View}\{SubKey}\\{Name ?? "(Default)"}".ToLower();
-        }
+        public string ID => $@"{Hive}\{View}\{SubKey}\\{Name ?? "(Default)"}".ToLower();
 
         public RegistryValueMemento GetState()
         {

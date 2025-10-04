@@ -24,14 +24,14 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
         public ISnapshot SnapshotRegistryKey(RegistryHive hive, RegistryView view, string subKey)
         {
             var originator = new RegistryKeyOriginator(hive, view, subKey, registry);
-            var snapshot = new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(originator, connection);
+            var snapshot = new RegistryKeyCaretaker(originator, connection);
             return snapshot;
         }
 
         public ISnapshot SnapshotRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
         {
             var originator = new RegistryValueOriginator(hive, view, subKey, name, registry);
-            var snapshot = new Caretaker<RegistryValueOriginator, RegistryValueMemento>(originator, connection);
+            var snapshot = new RegistryValueCaretaker(originator, connection);
             return snapshot;
         }
     }

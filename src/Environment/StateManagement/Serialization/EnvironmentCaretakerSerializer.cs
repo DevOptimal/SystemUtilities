@@ -35,7 +35,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                         Value = environmentVariableValue
                     };
 
-                    return new Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>(id, parentId, processId, processStartTime, connection, environmentVariableOriginator, environmentVariableMemento);
+                    return new EnvironmentVariableCaretaker(id, parentId, processId, processStartTime, connection, environmentVariableOriginator, environmentVariableMemento);
                 default: throw new Exception();
             }
         }
@@ -52,7 +52,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
 
             switch (caretaker)
             {
-                case Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento> environmentVariableCaretaker:
+                case EnvironmentVariableCaretaker environmentVariableCaretaker:
                     result[resourceTypePropertyName] = environmentVariableResourceTypeName;
                     result[nameof(EnvironmentVariableOriginator.Name)] = environmentVariableCaretaker.Originator.Name;
                     result[nameof(EnvironmentVariableOriginator.Target)] = environmentVariableCaretaker.Originator.Target.ToString();

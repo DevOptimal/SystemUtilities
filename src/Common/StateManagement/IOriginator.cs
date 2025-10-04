@@ -3,7 +3,7 @@
     internal interface IOriginator<TMemento>
         where TMemento : IMemento
     {
-        string GetID();
+        string ID { get; }
 
         TMemento GetState();
 

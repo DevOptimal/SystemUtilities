@@ -15,10 +15,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 
         public IRegistry Registry { get; } = registry ?? throw new ArgumentNullException(nameof(registry));
 
-        public string GetID()
-        {
-            return $@"{Hive}\{View}\{SubKey}".ToLower();
-        }
+        public string ID => $@"{Hive}\{View}\{SubKey}".ToLower();
 
         public RegistryKeyMemento GetState()
         {

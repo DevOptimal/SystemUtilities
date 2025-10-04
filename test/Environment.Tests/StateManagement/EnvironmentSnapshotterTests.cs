@@ -1,6 +1,5 @@
 ﻿using DevOptimal.SystemUtilities.Common.StateManagement.Exceptions;
 using DevOptimal.SystemUtilities.Environment.StateManagement;
-using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Threading.Tasks;

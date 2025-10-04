@@ -18,23 +18,26 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
 
         public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-        public string GetID()
+        public string ID
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            get
             {
-                return Path;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return Path.ToLower();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return Path;
-            }
-            else
-            {
-                throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return Path;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return Path.ToLower();
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    return Path;
+                }
+                else
+                {
+                    throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
+                }
             }
         }
 

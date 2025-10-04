@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
-    internal class Caretaker<TOriginator, TMemento> : ICaretaker, ISnapshot
+    internal abstract class Caretaker<TOriginator, TMemento> : ICaretaker, ISnapshot
         where TOriginator : IOriginator<TMemento>
         where TMemento : IMemento
     {
@@ -29,7 +29,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         {
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            ID = originator.GetID();
+            ID = originator.ID;
             ParentID = connection.ID;
             var currentProcess = Process.GetCurrentProcess();
             ProcessID = currentProcess.Id;
@@ -89,7 +89,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
         }
 
-        public void Restore()
+        public virtual void Restore()
         {
             Originator.SetState(Memento);
         }

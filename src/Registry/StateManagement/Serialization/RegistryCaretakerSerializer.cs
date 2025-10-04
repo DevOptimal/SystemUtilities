@@ -40,7 +40,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Exists = registryKeyExists
                     };
 
-                    return new Caretaker<RegistryKeyOriginator, RegistryKeyMemento>(id, parentId, processId, processStartTime, connection, registryKeyOriginator, registryKeyMemento);
+                    return new RegistryKeyCaretaker(id, parentId, processId, processStartTime, connection, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
                     var registryValueHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryValueOriginator.Hive)]);
                     var registryValueView = AsEnum<RegistryView>(dictionary[nameof(RegistryValueOriginator.View)]);
@@ -56,7 +56,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         Kind = registryValueKind
                     };
 
-                    return new Caretaker<RegistryValueOriginator, RegistryValueMemento>(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
+                    return new RegistryValueCaretaker(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
                 default: throw new Exception();
             }
         }
@@ -73,14 +73,14 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
 
             switch (caretaker)
             {
-                case Caretaker<RegistryKeyOriginator, RegistryKeyMemento> registryKeyCaretaker:
+                case RegistryKeyCaretaker registryKeyCaretaker:
                     result[resourceTypePropertyName] = registryKeyResourceTypeName;
                     result[nameof(RegistryKeyOriginator.Hive)] = registryKeyCaretaker.Originator.Hive.ToString();
                     result[nameof(RegistryKeyOriginator.View)] = registryKeyCaretaker.Originator.View.ToString();
                     result[nameof(RegistryKeyOriginator.SubKey)] = registryKeyCaretaker.Originator.SubKey;
                     result[nameof(RegistryKeyMemento.Exists)] = registryKeyCaretaker.Memento.Exists;
                     break;
-                case Caretaker<RegistryValueOriginator, RegistryValueMemento> registryValueCaretaker:
+                case RegistryValueCaretaker registryValueCaretaker:
                     result[resourceTypePropertyName] = registryValueResourceTypeName;
                     result[nameof(RegistryValueOriginator.Hive)] = registryValueCaretaker.Originator.Hive.ToString();
                     result[nameof(RegistryValueOriginator.View)] = registryValueCaretaker.Originator.View.ToString();
