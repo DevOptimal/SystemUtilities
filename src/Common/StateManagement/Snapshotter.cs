@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
-    // TODO: Can we combine the database and snapshotter into one class?
     public abstract class Snapshotter : IDisposable
     {
         protected static readonly DirectoryInfo defaultPersistenceDirectory = new(
@@ -27,7 +26,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         internal Snapshotter(CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
             ID = Guid.NewGuid().ToString();
-            connection = new DatabaseConnection(serializer, persistenceDirectory);
+            connection = new DatabaseConnection(GetType().Name, serializer, persistenceDirectory);
         }
 
         protected virtual void Dispose(bool disposing)

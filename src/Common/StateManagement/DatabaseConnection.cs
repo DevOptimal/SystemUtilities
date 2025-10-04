@@ -23,7 +23,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         private readonly FileInfo databaseFile;
         private readonly FileInfo transactionFile;
 
-        public DatabaseConnection(CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
+        public DatabaseConnection(string name, CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
             if (persistenceDirectory == null)
             {
@@ -31,8 +31,8 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
 
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{GetType().Name}.json"));
-            transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{GetType().Name}.Transaction.json"));
+            databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.json"));
+            transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.Transaction.json"));
 
             ID = Guid.NewGuid().ToString();
 
