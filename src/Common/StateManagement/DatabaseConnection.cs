@@ -9,6 +9,10 @@ using System.Threading;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
+    /// <summary>
+    /// Manages transactional access to a JSON-based caretaker database with cross-process locking.
+    /// Handles reading, writing, and updating caretaker state with file-based persistence and a global mutex.
+    /// </summary>
     internal class DatabaseConnection : IDisposable
     {
         private Mutex mutex;
@@ -21,6 +25,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         private readonly FileInfo databaseFile;
         private readonly FileInfo transactionFile;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DatabaseConnection"/> class.
+        /// Sets up file paths and a global mutex for cross-process synchronization.
+        /// </summary>
+        /// <param name="name">The logical name for the database (used in file naming).</param>
+        /// <param name="serializer">The caretaker serializer to use for reading/writing.</param>
+        /// <param name="persistenceDirectory">The directory for database files.</param>
+        /// <exception cref="ArgumentNullException">Thrown if any argument is null.</exception>
+        /// <exception cref="PlatformNotSupportedException">Thrown if the OS is not supported.</exception>
         public DatabaseConnection(string name, CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
             if (persistenceDirectory == null)
@@ -32,25 +45,24 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.json"));
             transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.Transaction.json"));
 
-            // Get normalized file path
+            // Get normalized file path for mutex ID
             var normalizedDatabaseID = Path.GetFullPath(databaseFile.FullName).Replace('\\', '/');
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 normalizedDatabaseID = normalizedDatabaseID.ToLower();
             }
 
-            // unique id for global mutex - Global prefix means it is global to the machine
+            // Unique id for global mutex - Global prefix means it is global to the machine
             var mutexId = $@"Global\{nameof(DevOptimal)}.{nameof(SystemUtilities)}.{nameof(StateManagement)}:/{normalizedDatabaseID}";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // edited by Jeremy Wiebe to add example of setting up security for multi-user usage
-                // edited by 'Marc' to work also on localized systems (don't use just "Everyone") 
+                // Set up security for multi-user usage (allow "Everyone" full control)
                 var allowEveryoneRule = new MutexAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null), MutexRights.FullControl, AccessControlType.Allow);
                 var securitySettings = new MutexSecurity();
                 securitySettings.AddAccessRule(allowEveryoneRule);
 
-                // edited by MasonGZhwiti to prevent race condition on security settings via VanNguyen
+                // Create the mutex with security settings
 #if NETSTANDARD2_0
                 mutex = MutexAcl.Create(false, mutexId, out var createdNew, securitySettings);
 #else
@@ -67,8 +79,17 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
         }
 
+        /// <summary>
+        /// Begins a transaction with a default timeout of 30 seconds.
+        /// </summary>
         public void BeginTransaction() => BeginTransaction(TimeSpan.FromSeconds(30));
 
+        /// <summary>
+        /// Begins a transaction, acquiring the mutex and preparing the caretaker data for update.
+        /// </summary>
+        /// <param name="timeout">The maximum time to wait for the mutex.</param>
+        /// <exception cref="ObjectDisposedException">Thrown if the connection is disposed.</exception>
+        /// <exception cref="TimeoutException">Thrown if the mutex cannot be acquired in time.</exception>
         public void BeginTransaction(TimeSpan timeout)
         {
             if (disposedValue)
@@ -84,12 +105,12 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
             catch (AbandonedMutexException)
             {
-                // Log the fact that the mutex was abandoned in another process,
-                // it will still get acquired
+                // The mutex was abandoned in another process, but is now acquired
             }
 
             var databaseDirectory = databaseFile.Directory;
 
+            // Ensure the database directory exists and set permissions
             if (!databaseDirectory.Exists)
             {
                 databaseDirectory.Create();
@@ -107,11 +128,12 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 }
             }
 
+            // Ensure the database file exists, recover from failed commit if needed
             if (!databaseFile.Exists)
             {
                 if (transactionFile.Exists)
                 {
-                    // Try to recover from failed commit transaction
+                    // Recover from failed commit transaction
                     File.Move(transactionFile.FullName, databaseFile.FullName);
                 }
                 else
@@ -120,11 +142,17 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 }
             }
 
+            // Open the database file for reading and initialize the transaction
             var stream = File.Open(databaseFile.FullName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None);
             reader = new JsonReader(stream);
             transaction = serializer.ReadCaretakers(reader, this);
         }
 
+        /// <summary>
+        /// Applies an update function to the current transaction's caretakers.
+        /// </summary>
+        /// <param name="updateFunction">A function that takes and returns a collection of caretakers.</param>
+        /// <exception cref="ObjectDisposedException">Thrown if the connection is disposed.</exception>
         public void UpdateCaretakers(Func<IEnumerable<ICaretaker>, IEnumerable<ICaretaker>> updateFunction)
         {
             if (disposedValue)
@@ -134,6 +162,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             transaction = updateFunction(transaction);
         }
 
+        /// <summary>
+        /// Rolls back the current transaction, discarding changes and releasing the mutex.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">Thrown if the connection is disposed.</exception>
         public void RollbackTransaction()
         {
             if (disposedValue)
@@ -146,6 +178,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             mutex.ReleaseMutex();
         }
 
+        /// <summary>
+        /// Commits the current transaction, writing changes to disk and releasing the mutex.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">Thrown if the connection is disposed.</exception>
         public void CommitTransaction()
         {
             if (disposedValue)
@@ -165,6 +201,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             mutex.ReleaseMutex();
         }
 
+        /// <summary>
+        /// Releases resources used by the <see cref="DatabaseConnection"/>.
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose; false if called from finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -194,6 +234,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         //     Dispose(disposing: false);
         // }
 
+        /// <summary>
+        /// Disposes the <see cref="DatabaseConnection"/> and suppresses finalization.
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

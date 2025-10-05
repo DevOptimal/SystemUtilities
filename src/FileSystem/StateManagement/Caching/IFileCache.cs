@@ -2,10 +2,13 @@
 
 namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching
 {
+    /// <summary>
+    /// Defines the contract for a file cache, supporting upload and download of file contents.
+    /// </summary>
     public interface IFileCache
     {
         /// <summary>
-        /// The abstraction used to access the file system.
+        /// Gets the abstraction used to access the file system.
         /// </summary>
         IFileSystem FileSystem { get; }
 

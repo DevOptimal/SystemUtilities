@@ -1,4 +1,5 @@
-﻿using DevOptimal.SystemUtilities.Common.StateManagement;
+﻿// Implements a caretaker serializer for registry resources, supporting streaming and efficient resource usage.
+using DevOptimal.SystemUtilities.Common.StateManagement;
 using DevOptimal.SystemUtilities.Common.StateManagement.Serialization;
 using DevOptimal.SystemUtilities.Registry.Abstractions;
 using Microsoft.Win32;
@@ -10,14 +11,20 @@ using System.Text;
 namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
 {
     /// <summary>
-    /// Goal of this serializer is efficient resource usage by streaming caretakers instead of loading all of them into memory at once.
-    /// To accomplish this, we parse and yield return caretakers as we read them from the JSON stream.
+    /// Serializes and deserializes caretakers for registry resources (keys and values).
+    /// Designed for efficient resource usage by streaming caretakers from a JSON source.
     /// </summary>
     internal class RegistryCaretakerSerializer(IRegistry registry) : CaretakerSerializer
     {
         private const string registryKeyResourceTypeName = "RegistryKey";
         private const string registryValueResourceTypeName = "RegistryValue";
 
+        /// <summary>
+        /// Converts a dictionary representation of a caretaker to an ICaretaker instance.
+        /// </summary>
+        /// <param name="dictionary">The dictionary to convert.</param>
+        /// <param name="connection">The database connection context.</param>
+        /// <returns>The deserialized ICaretaker.</returns>
         protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
             // Get caretaker fields
@@ -61,6 +68,11 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Converts an ICaretaker instance to a dictionary representation.
+        /// </summary>
+        /// <param name="caretaker">The caretaker to convert.</param>
+        /// <returns>The dictionary representation.</returns>
         protected override IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker)
         {
             var result = new Dictionary<string, object>

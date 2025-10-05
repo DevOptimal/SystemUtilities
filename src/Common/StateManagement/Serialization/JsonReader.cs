@@ -6,30 +6,56 @@ using System.Text;
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 {
     /// <summary>
-    /// Reads a JSON array as an enumerable. Implementing our own lightweight JSON reader to avoid dependencies.
+    /// Reads a JSON array as an enumerable. Implements a lightweight JSON reader to avoid external dependencies.
+    /// Supports reading JSON values, arrays, and objects from a stream.
     /// Reference: https://www.json.org/json-en.html
     /// </summary>
     internal class JsonReader : StreamReader
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonReader"/> class from a <see cref="FileInfo"/>.
+        /// </summary>
+        /// <param name="file">The file to read from.</param>
         public JsonReader(FileInfo file)
             : this(file.FullName) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonReader"/> class from a file path.
+        /// </summary>
+        /// <param name="path">The path to the file.</param>
         public JsonReader(string path)
             : base(path) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonReader"/> class from a stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
         public JsonReader(Stream stream)
             : base(stream) { }
 
+        /// <summary>
+        /// Peeks at the next character in the stream without advancing the reader.
+        /// </summary>
+        /// <returns>The next character.</returns>
         public char PeekChar()
         {
             return (char)Peek();
         }
 
+        /// <summary>
+        /// Reads the next character from the stream and advances the reader.
+        /// </summary>
+        /// <returns>The next character.</returns>
         public char ReadChar()
         {
             return (char)Read();
         }
 
+        /// <summary>
+        /// Asserts that the next characters in the stream match the expected sequence.
+        /// Throws <see cref="JsonParserException"/> if the assertion fails.
+        /// </summary>
+        /// <param name="expectedChars">The expected characters.</param>
         public void AssertChar(params char[] expectedChars)
         {
             foreach (var expectedChar in expectedChars)
@@ -42,6 +68,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Reads and discards whitespace characters from the stream.
+        /// </summary>
         public void ReadWhiteSpace()
         {
             var whiteSpaceCharacters = new List<char> { ' ', '\n', '\r', '\t' };
@@ -51,6 +80,11 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Reads a JSON number from the stream and returns it as an int, long, float, double, or decimal.
+        /// Throws <see cref="JsonParserException"/> if the number cannot be parsed.
+        /// </summary>
+        /// <returns>The parsed number as an object.</returns>
         public object ReadNumber()
         {
             var digitCharacters = new List<char> { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
@@ -78,6 +112,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                 throw new JsonParserException($"Unexpected character encountered: {PeekChar()}");
             }
 
+            // Handle fractional part
             if (PeekChar() == '.')
             {
                 sb.Append(ReadChar());
@@ -92,6 +127,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                 } while (digitCharacters.Contains(PeekChar()));
             }
 
+            // Handle exponent part
             var exponentCharacters = new List<char> { 'e', 'E' };
             if (exponentCharacters.Contains(PeekChar()))
             {
@@ -114,6 +150,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                 } while (digitCharacters.Contains(PeekChar()));
             }
 
+            // Try parsing to various numeric types
             if (int.TryParse(sb.ToString(), out var intResult))
             {
                 return intResult;
@@ -140,6 +177,11 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Reads a JSON string from the stream, handling escape sequences.
+        /// Throws <see cref="JsonParserException"/> for invalid escape sequences.
+        /// </summary>
+        /// <returns>The parsed string.</returns>
         public string ReadString()
         {
             var sb = new StringBuilder();
@@ -183,6 +225,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                                 sb.Append('\t');
                                 break;
                             case 'u':
+                                // Handle Unicode escape sequence
                                 var hexDigitCharacters = new List<char> { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F' };
                                 var hexStringBuilder = new StringBuilder();
                                 for (var i = 0; i < 4; i++)
@@ -207,6 +250,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Reads a JSON value (string, number, object, array, true, false, or null) from the stream.
+        /// </summary>
+        /// <returns>The parsed value as an object.</returns>
         public object ReadValue()
         {
             ReadWhiteSpace();
@@ -256,11 +303,19 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a JSON array from the stream and returns it as an object array.
+        /// </summary>
+        /// <returns>The parsed array.</returns>
         public object[] ReadArray()
         {
             return [.. EnumerateArray()];
         }
 
+        /// <summary>
+        /// Enumerates the elements of a JSON array from the stream.
+        /// </summary>
+        /// <returns>An enumerable of parsed array elements.</returns>
         public IEnumerable<object> EnumerateArray()
         {
             AssertChar('[');
@@ -284,6 +339,10 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             AssertChar(']');
         }
 
+        /// <summary>
+        /// Reads a JSON object from the stream and returns it as a dictionary.
+        /// </summary>
+        /// <returns>The parsed object as a dictionary.</returns>
         public IDictionary<string, object> ReadObject()
         {
             var result = new Dictionary<string, object>();

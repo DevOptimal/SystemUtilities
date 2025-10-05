@@ -1,4 +1,5 @@
-﻿using DevOptimal.SystemUtilities.Common.StateManagement;
+﻿// Implements a snapshotter for registry resources, supporting registry key and value snapshots.
+using DevOptimal.SystemUtilities.Common.StateManagement;
 using DevOptimal.SystemUtilities.Registry.Abstractions;
 using DevOptimal.SystemUtilities.Registry.StateManagement.Serialization;
 using Microsoft.Win32;
@@ -6,21 +7,44 @@ using System.IO;
 
 namespace DevOptimal.SystemUtilities.Registry.StateManagement
 {
+    /// <summary>
+    /// Manages transactional access and snapshots for registry resources (keys and values).
+    /// </summary>
+    /// <param name="registry">The registry abstraction.</param>
+    /// <param name="persistenceDirectory">The directory for persisting caretaker data.</param>
     public class RegistrySnapshotter(IRegistry registry, DirectoryInfo persistenceDirectory)
         : Snapshotter(new RegistryCaretakerSerializer(registry), persistenceDirectory)
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrySnapshotter"/> class with the default registry.
+        /// </summary>
         public RegistrySnapshotter()
             : this(new DefaultRegistry(), defaultPersistenceDirectory)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrySnapshotter"/> class with the specified registry.
+        /// </summary>
+        /// <param name="registry">The registry abstraction.</param>
         public RegistrySnapshotter(IRegistry registry)
             : this(registry, defaultPersistenceDirectory)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrySnapshotter"/> class with the specified persistence directory.
+        /// </summary>
+        /// <param name="persistenceDirectory">The directory for persisting caretaker data.</param>
         public RegistrySnapshotter(DirectoryInfo persistenceDirectory)
             : this(new DefaultRegistry(), persistenceDirectory)
         { }
 
+        /// <summary>
+        /// Creates a snapshot of a registry key resource.
+        /// </summary>
+        /// <param name="hive">The registry hive.</param>
+        /// <param name="view">The registry view.</param>
+        /// <param name="subKey">The registry subkey path.</param>
+        /// <returns>An <see cref="ISnapshot"/> representing the registry key's state.</returns>
         public ISnapshot SnapshotRegistryKey(RegistryHive hive, RegistryView view, string subKey)
         {
             var originator = new RegistryKeyOriginator(hive, view, subKey, registry);
@@ -28,6 +52,14 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
             return snapshot;
         }
 
+        /// <summary>
+        /// Creates a snapshot of a registry value resource.
+        /// </summary>
+        /// <param name="hive">The registry hive.</param>
+        /// <param name="view">The registry view.</param>
+        /// <param name="subKey">The registry subkey path.</param>
+        /// <param name="name">The registry value name.</param>
+        /// <returns>An <see cref="ISnapshot"/> representing the registry value's state.</returns>
         public ISnapshot SnapshotRegistryValue(RegistryHive hive, RegistryView view, string subKey, string name)
         {
             var originator = new RegistryValueOriginator(hive, view, subKey, name, registry);

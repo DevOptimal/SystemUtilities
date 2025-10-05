@@ -8,8 +8,15 @@ using System.Linq;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
+    /// <summary>
+    /// Abstract base class for managing the lifecycle of resource snapshots using caretakers.
+    /// Handles transactional restoration of resources and cleanup of abandoned snapshots.
+    /// </summary>
     public abstract class Snapshotter : IDisposable
     {
+        /// <summary>
+        /// The default directory for persisting caretaker data.
+        /// </summary>
         protected static readonly DirectoryInfo defaultPersistenceDirectory = new(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
@@ -17,17 +24,36 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 nameof(SystemUtilities),
                 nameof(StateManagement)));
 
+        /// <summary>
+        /// Unique identifier for this snapshotter instance.
+        /// </summary>
         internal string ID { get; }
+
+        /// <summary>
+        /// The database connection used for caretaker persistence and transactions.
+        /// </summary>
         internal DatabaseConnection Connection { get; }
 
+        /// <summary>
+        /// Indicates whether the object has been disposed.
+        /// </summary>
         protected bool disposedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Snapshotter"/> class.
+        /// </summary>
+        /// <param name="serializer">The caretaker serializer to use for persistence.</param>
+        /// <param name="persistenceDirectory">The directory for storing caretaker data.</param>
         internal Snapshotter(CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
             ID = Guid.NewGuid().ToString();
             Connection = new DatabaseConnection(GetType().Name, serializer, persistenceDirectory);
         }
 
+        /// <summary>
+        /// Disposes the snapshotter, restoring all caretakers associated with this instance and releasing resources.
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose; false if called from finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -62,6 +88,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         //     Dispose(disposing: false);
         // }
 
+        /// <summary>
+        /// Disposes the snapshotter and suppresses finalization.
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -69,6 +98,12 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Restores all caretakers associated with this snapshotter instance.
+        /// Any exceptions during restoration are collected and aggregated.
+        /// </summary>
+        /// <param name="caretakers">The caretakers to process.</param>
+        /// <returns>The caretakers not restored by this snapshotter.</returns>
         private IEnumerable<ICaretaker> RestoreCaretakers(IEnumerable<ICaretaker> caretakers)
         {
             var exceptions = new List<Exception>();
@@ -96,10 +131,14 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
         }
 
+        /// <summary>
+        /// Restores caretakers whose owning process is no longer running (abandoned snapshots).
+        /// </summary>
+        /// <param name="caretakers">The caretakers to process.</param>
+        /// <returns>The caretakers not restored (still owned by running processes).</returns>
         private IEnumerable<ICaretaker> RestoreAbandonedCaretakers(IEnumerable<ICaretaker> caretakers)
         {
-            // Create a dictionary that maps process IDs to process start times, which will be used to uniquely identify a currently running process.
-            // A null value indicates that the current process does not have permission to the corresponding process - try rerunning in an elevated process.
+            // Map process IDs to process start times; null means no permission to access process info.
             var processes = new Dictionary<int, DateTime?>();
             foreach (var process in Process.GetProcesses())
             {
@@ -111,12 +150,13 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 {
                     processes[process.Id] = null;
                 }
-                catch (InvalidOperationException) { } // The process has already exited, so don't add it.
+                catch (InvalidOperationException) { } // The process has already exited.
             }
 
             var exceptions = new List<Exception>();
             foreach (var caretaker in caretakers)
             {
+                // Restore if the process is not running or inaccessible, otherwise yield.
                 if (!(processes.ContainsKey(caretaker.ProcessID) && (processes[caretaker.ProcessID] == caretaker.ProcessStartTime || processes[caretaker.ProcessID] == null)))
                 {
                     try
@@ -139,6 +179,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
         }
 
+        /// <summary>
+        /// Restores all abandoned snapshots (resources locked by processes that are no longer running).
+        /// </summary>
         public void RestoreAbandonedSnapshots()
         {
             Connection.BeginTransaction();

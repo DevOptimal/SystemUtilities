@@ -1,4 +1,5 @@
-﻿using DevOptimal.SystemUtilities.Common.StateManagement;
+﻿// Implements a caretaker serializer for file system resources, supporting streaming and efficient resource usage.
+using DevOptimal.SystemUtilities.Common.StateManagement;
 using DevOptimal.SystemUtilities.Common.StateManagement.Serialization;
 using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 using DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching;
@@ -8,14 +9,20 @@ using System.Collections.Generic;
 namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
 {
     /// <summary>
-    /// Goal of this serializer is efficient resource usage by streaming caretakers instead of loading all of them into memory at once.
-    /// To accomplish this, we parse and yield return caretakers as we read them from the JSON stream.
+    /// Serializes and deserializes caretakers for file system resources (directories and files).
+    /// Designed for efficient resource usage by streaming caretakers from a JSON source.
     /// </summary>
     internal class FileSystemCaretakerSerializer(IFileSystem fileSystem, IFileCache fileCache) : CaretakerSerializer
     {
         private const string directoryResourceTypeName = "Directory";
         private const string fileResourceTypeName = "File";
 
+        /// <summary>
+        /// Converts a dictionary representation of a caretaker to an ICaretaker instance.
+        /// </summary>
+        /// <param name="dictionary">The dictionary to convert.</param>
+        /// <param name="connection">The database connection context.</param>
+        /// <returns>The deserialized ICaretaker.</returns>
         protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
             // Get caretaker fields
@@ -52,6 +59,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
             }
         }
 
+        /// <summary>
+        /// Converts an ICaretaker instance to a dictionary representation.
+        /// </summary>
+        /// <param name="caretaker">The caretaker to convert.</param>
+        /// <returns>The dictionary representation.</returns>
         protected override IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker)
         {
             var result = new Dictionary<string, object>
