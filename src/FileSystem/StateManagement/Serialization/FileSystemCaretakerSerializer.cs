@@ -48,7 +48,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                     };
 
                     return new FileCaretaker(id, parentId, processId, processStartTime, connection, fileOriginator, fileMemento);
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
@@ -74,7 +74,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                     result[nameof(FileOriginator.Path)] = fileCaretaker.Originator.Path;
                     result[nameof(FileMemento.Hash)] = fileCaretaker.Memento.Hash;
                     break;
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;

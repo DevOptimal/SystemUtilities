@@ -95,7 +95,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                     case bool b:
                         Write(b ? "true" : "false");
                         break;
-                    default: throw new Exception();
+                    default: throw new NotSupportedException($"Unsupported object type: {value.GetType().Name}");
                 }
             }
         }

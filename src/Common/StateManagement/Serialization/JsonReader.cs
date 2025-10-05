@@ -29,13 +29,14 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             return (char)Read();
         }
 
-        public void AssertChar(params char[] c)
+        public void AssertChar(params char[] expectedChars)
         {
-            foreach (var ch in c)
+            foreach (var expectedChar in expectedChars)
             {
-                if (ch != ReadChar())
+                var actualChar = ReadChar();
+                if (expectedChar != actualChar)
                 {
-                    throw new JsonParsingException();
+                    throw new JsonParsingException($"Expected char '{expectedChar}', but found '{actualChar}' instead.");
                 }
             }
         }
@@ -73,7 +74,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Unexpected character encountered: {PeekChar()}");
             }
 
             if (PeekChar() == '.')
@@ -81,7 +82,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                 sb.Append(ReadChar());
                 if (!digitCharacters.Contains(PeekChar()))
                 {
-                    throw new JsonParsingException();
+                    throw new JsonParsingException($"Unexpected character encountered: {PeekChar()}");
                 }
 
                 do
@@ -103,7 +104,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
 
                 if (!digitCharacters.Contains(PeekChar()))
                 {
-                    throw new JsonParsingException();
+                    throw new JsonParsingException($"Unexpected character encountered: {PeekChar()}");
                 }
 
                 do
@@ -134,7 +135,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Unable to parse number: {sb}");
             }
         }
 
@@ -153,7 +154,8 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                         return sb.ToString();
                     case '\\':
                         ReadChar();
-                        switch (ReadChar())
+                        var nextChar = ReadChar();
+                        switch (nextChar)
                         {
                             case '"':
                                 sb.Append('"');
@@ -186,7 +188,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                                 {
                                     if (!hexDigitCharacters.Contains(PeekChar()))
                                     {
-                                        throw new JsonParsingException();
+                                        throw new JsonParsingException($"Unexpected character encountered: {PeekChar()}");
                                     }
 
                                     hexStringBuilder.Append(ReadChar());
@@ -194,7 +196,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                                 sb.Append((char)int.Parse(hexStringBuilder.ToString(), System.Globalization.NumberStyles.HexNumber));
                                 break;
                             default:
-                                throw new JsonParsingException();
+                                throw new JsonParsingException($"Unexpected character encountered: {nextChar}");
                         }
                         break;
                     default:
@@ -245,7 +247,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
                     AssertChar('n', 'u', 'l', 'l');
                     result = null;
                     break;
-                default: throw new JsonParsingException();
+                default: throw new JsonParsingException($"Unexpected character encountered: {PeekChar()}");
             }
 
             ReadWhiteSpace();

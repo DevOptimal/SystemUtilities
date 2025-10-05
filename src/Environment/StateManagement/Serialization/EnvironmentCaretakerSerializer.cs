@@ -36,7 +36,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                     };
 
                     return new EnvironmentVariableCaretaker(id, parentId, processId, processStartTime, connection, environmentVariableOriginator, environmentVariableMemento);
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
@@ -58,7 +58,7 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                     result[nameof(EnvironmentVariableOriginator.Target)] = environmentVariableCaretaker.Originator.Target.ToString();
                     result[nameof(EnvironmentVariableMemento.Value)] = environmentVariableCaretaker.Memento.Value;
                     break;
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;

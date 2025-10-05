@@ -34,7 +34,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Expected a boolean, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -54,7 +54,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Expected a DateTime, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -79,7 +79,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Expected an enumeration, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -91,7 +91,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Expected an integer, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -107,7 +107,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException();
+                throw new JsonParsingException($"Expected a string, but got an object of type: {o.GetType().Name}");
             }
         }
     }

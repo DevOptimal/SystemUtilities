@@ -30,7 +30,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching
             var blobPath = Path.Combine(RootPath, id);
             if (!FileSystem.FileExists(blobPath))
             {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException("The file does not exist in the cache.", blobPath);
             }
 
             FileSystem.CopyFile(blobPath, destinationPath, overwrite: true);
@@ -42,7 +42,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching
         {
             if (!FileSystem.FileExists(sourcePath))
             {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException("The source file does not exist.", sourcePath);
             }
 
             var id = Guid.NewGuid().ToString();

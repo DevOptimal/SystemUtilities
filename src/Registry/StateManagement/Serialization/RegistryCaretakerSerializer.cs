@@ -57,7 +57,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     };
 
                     return new RegistryValueCaretaker(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
@@ -89,7 +89,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     result[nameof(RegistryValueMemento.Value)] = ConvertFromRegistryValue(registryValueCaretaker.Memento.Value);
                     result[nameof(RegistryValueMemento.Kind)] = registryValueCaretaker.Memento.Kind.ToString();
                     break;
-                default: throw new Exception();
+                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;
@@ -174,7 +174,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
             }
             else
             {
-                throw new Exception();
+                throw new NotSupportedException($"Expected a string, but got an object of type: {o.GetType().Name}");
             }
         }
     }
