@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevOptimal.SystemUtilities.Common.StateManagement.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,7 +35,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException($"Expected a boolean, but got an object of type: {o.GetType().Name}");
+                throw new JsonParserException($"Expected a boolean, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -54,7 +55,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException($"Expected a DateTime, but got an object of type: {o.GetType().Name}");
+                throw new JsonParserException($"Expected a DateTime, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -79,7 +80,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException($"Expected an enumeration, but got an object of type: {o.GetType().Name}");
+                throw new JsonParserException($"Expected an enumeration, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -91,7 +92,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException($"Expected an integer, but got an object of type: {o.GetType().Name}");
+                throw new JsonParserException($"Expected an integer, but got an object of type: {o.GetType().Name}");
             }
         }
 
@@ -107,7 +108,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
             }
             else
             {
-                throw new JsonParsingException($"Expected a string, but got an object of type: {o.GetType().Name}");
+                throw new JsonParserException($"Expected a string, but got an object of type: {o.GetType().Name}");
             }
         }
     }
