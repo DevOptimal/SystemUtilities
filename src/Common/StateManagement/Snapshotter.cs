@@ -127,7 +127,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
             if (exceptions.Any())
             {
-                new AggregateException($"Unable to restore {exceptions.Count} snapshot(s).", exceptions);
+                throw new AggregateException($"Unable to restore {exceptions.Count} snapshot(s).", exceptions);
             }
         }
 
@@ -175,7 +175,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
             if (exceptions.Any())
             {
-                new AggregateException($"Unable to restore {exceptions.Count} abandoned snapshot(s).", exceptions);
+                throw new AggregateException($"Unable to restore {exceptions.Count} abandoned snapshot(s).", exceptions);
             }
         }
 

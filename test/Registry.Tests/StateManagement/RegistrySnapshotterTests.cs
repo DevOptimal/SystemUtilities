@@ -19,7 +19,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             using var snapshotter = CreateSnapshotter();
             using (snapshotter.SnapshotRegistryKey(hive, view, subKey))
@@ -35,7 +35,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             using var snapshotter = CreateSnapshotter();
             using (snapshotter.SnapshotRegistryKey(hive, view, subKey))
@@ -53,7 +53,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             registry.CreateRegistryKey(hive, view, subKey);
 
@@ -71,7 +71,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             using (var snapshotter = CreateSnapshotter())
             {
@@ -87,7 +87,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             using (var snapshotter = CreateSnapshotter())
             {
@@ -105,7 +105,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
         {
             var hive = RegistryHive.LocalMachine;
             var view = RegistryView.Default;
-            var subKey = @"SOTFWARE\Microsoft\Windows";
+            var subKey = @"SOFTWARE\Microsoft\Windows";
 
             registry.CreateRegistryKey(hive, view, subKey);
 
