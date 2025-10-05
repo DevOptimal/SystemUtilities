@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using DevOptimal.SystemUtilities.FileSystem.Extensions;
+using System.IO;
 
 namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
@@ -65,13 +66,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
         /// <inheritdoc />
         public void HardLinkFile(string sourcePath, string destinationPath, bool overwrite)
         {
-            FileUtilities.HardLink(sourcePath, destinationPath, overwrite);
+            File.HardLink(sourcePath, destinationPath, overwrite);
         }
 
         /// <inheritdoc />
         public void MoveFile(string sourcePath, string destinationPath, bool overwrite)
         {
-            FileUtilities.Move(sourcePath, destinationPath, overwrite);
+            File.Move(sourcePath, destinationPath, overwrite);
         }
 
         /// <inheritdoc />
