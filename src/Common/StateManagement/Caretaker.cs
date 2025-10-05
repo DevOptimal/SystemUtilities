@@ -25,12 +25,16 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         private bool disposedValue;
 
-        public Caretaker(TOriginator originator, DatabaseConnection connection)
+        public Caretaker(TOriginator originator, Snapshotter snapshotter)
         {
+            if (snapshotter == null)
+            {
+                throw new ArgumentNullException(nameof(snapshotter));
+            }
             Originator = originator ?? throw new ArgumentNullException(nameof(originator));
-            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Connection = snapshotter.Connection ?? throw new ArgumentNullException(nameof(snapshotter.Connection));
             ID = originator.ID;
-            ParentID = connection.ID;
+            ParentID = snapshotter.ID;
             var currentProcess = Process.GetCurrentProcess();
             ProcessID = currentProcess.Id;
             ProcessStartTime = currentProcess.StartTime;

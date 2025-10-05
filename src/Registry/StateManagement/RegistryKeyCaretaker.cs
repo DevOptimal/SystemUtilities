@@ -5,8 +5,8 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 {
     internal class RegistryKeyCaretaker : Caretaker<RegistryKeyOriginator, RegistryKeyMemento>
     {
-        public RegistryKeyCaretaker(RegistryKeyOriginator originator, DatabaseConnection connection)
-            : base(originator, connection)
+        public RegistryKeyCaretaker(RegistryKeyOriginator originator, RegistrySnapshotter snapshotter)
+            : base(originator, snapshotter)
         {
         }
 

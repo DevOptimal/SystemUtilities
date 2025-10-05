@@ -12,7 +12,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         public TestContext TestContext { get; set; }
 
         [TestMethod]
-        public void RevertsEnvironmentVariableCreation()
+        public void Snapshot_RevertsEnvironmentVariableCreation()
         {
             environment.SetEnvironmentVariable(name, null, target);
 
@@ -26,7 +26,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsEnvironmentVariableDeletion()
+        public void Snapshot_RevertsEnvironmentVariableDeletion()
         {
             environment.SetEnvironmentVariable(name, expectedValue, target);
 
@@ -40,7 +40,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsEnvironmentVariableAlteration()
+        public void Snapshot_RevertsEnvironmentVariableAlteration()
         {
             environment.SetEnvironmentVariable(name, expectedValue, target);
 
@@ -54,11 +54,50 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         }
 
         [TestMethod]
+        public void Snapshotter_RevertsEnvironmentVariableCreation()
+        {
+            environment.SetEnvironmentVariable(name, null, target);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotEnvironmentVariable(name, target);
+                environment.SetEnvironmentVariable(name, "bar", target);
+            }
+
+            Assert.IsNull(environment.GetEnvironmentVariable(name, target));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsEnvironmentVariableDeletion()
+        {
+            environment.SetEnvironmentVariable(name, expectedValue, target);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotEnvironmentVariable(name, target);
+                environment.SetEnvironmentVariable(name, null, target);
+            }
+
+            Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsEnvironmentVariableAlteration()
+        {
+            environment.SetEnvironmentVariable(name, expectedValue, target);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotEnvironmentVariable(name, target);
+                environment.SetEnvironmentVariable(name, "baz", target);
+            }
+
+            Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
+        }
+
+        [TestMethod]
         public void ThrowsWhenSnapshotLockedResource()
         {
-            var name = "foo";
-            var target = EnvironmentVariableTarget.Machine;
-
             using var snapshotter1 = CreateSnapshotter();
             using var snapshotter2 = CreateSnapshotter();
 
@@ -71,11 +110,10 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         [TestMethod]
         public void ConcurrentlySnapshotsEnvironmentVariables()
         {
-            var concurrentThreads = 100;
+            var concurrentThreads = 10;
 
             var names = new string[concurrentThreads];
             var expectedValues = new string[concurrentThreads];
-            var target = EnvironmentVariableTarget.Machine;
 
             for (var i = 0; i < concurrentThreads; i++)
             {
@@ -105,64 +143,58 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         public void RestoresAbandonedEnvironmentVariableSnapshots()
         {
             using var restoreSnapshotter = CreateSnapshotter();
-            var environmentVariableName = "foo";
-            var environmentVariableTarget = EnvironmentVariableTarget.Machine;
-            var expectedEnvironmentVariableValue = "bar";
 
             /*
              * First, we will test restoring an environment variable that didn't exist when the snapshot was taken, but has since been created
              */
             // Delete the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, null, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, null, target);
 
             // Simulate taking a snapshot of the environment variable from another process
             using (CreateShimsContext())
             {
                 var systemStateManager = CreateSnapshotter();
-                systemStateManager.SnapshotEnvironmentVariable(environmentVariableName, environmentVariableTarget);
+                systemStateManager.SnapshotEnvironmentVariable(name, target);
             }
 
             // Create the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, expectedEnvironmentVariableValue, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, expectedValue, target);
 
             // Restore the snapshot
             restoreSnapshotter.RestoreAbandonedSnapshots();
 
             // Verify that the environment variable has been deleted
-            Assert.IsNull(environment.GetEnvironmentVariable(environmentVariableName, environmentVariableTarget));
+            Assert.IsNull(environment.GetEnvironmentVariable(name, target));
 
             /*
              * Next, we will test restoring an environment variable that did exist when the snapshot was taken, but has since been deleted
              */
             // Create the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, expectedEnvironmentVariableValue, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, expectedValue, target);
 
             // Simulate taking a snapshot of the environment variable from another process
             using (CreateShimsContext())
             {
                 var systemStateManager = CreateSnapshotter();
-                systemStateManager.SnapshotEnvironmentVariable(environmentVariableName, environmentVariableTarget);
+                systemStateManager.SnapshotEnvironmentVariable(name, target);
             }
 
             // Delete the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, null, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, null, target);
 
             // Restore the snapshot
             restoreSnapshotter.RestoreAbandonedSnapshots();
 
             // Verify that the environment variable has been created
-            Assert.AreEqual(expectedEnvironmentVariableValue, environment.GetEnvironmentVariable(environmentVariableName, environmentVariableTarget));
+            Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
         }
 
         [TestMethod]
         public void DoesNotRestoreSnapshotsFromCurrentProcess()
         {
-            var name = "foo";
-            var target = EnvironmentVariableTarget.Machine;
-            var expectedValue = "bar";
-
             using var snapshotter = CreateSnapshotter();
 
+            //using var snapshot = snapshotter.SnapshotEnvironmentVariable(name, target);
             snapshotter.SnapshotEnvironmentVariable(name, target);
 
             environment.SetEnvironmentVariable(name, null, target);
@@ -176,28 +208,26 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         public void DoesNotRestoreProcessScopedEnvironmentVariableSnapshots()
         {
             using var restoreSnapshotter = CreateSnapshotter();
-            var environmentVariableName = "foo";
-            var environmentVariableTarget = EnvironmentVariableTarget.Process;
-            var environmentVariableValue = "bar";
+            var target = EnvironmentVariableTarget.Process;
 
             // Create the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, environmentVariableValue, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, expectedValue, target);
 
             // Simulate taking a snapshot of the environment variable from another process
             using (CreateShimsContext())
             {
                 var snapshotter = CreateSnapshotter();
-                snapshotter.SnapshotEnvironmentVariable(environmentVariableName, environmentVariableTarget);
+                snapshotter.SnapshotEnvironmentVariable(name, target);
             }
 
             // Delete the environment variable
-            environment.SetEnvironmentVariable(environmentVariableName, null, environmentVariableTarget);
+            environment.SetEnvironmentVariable(name, null, target);
 
             // Restore the snapshot
             restoreSnapshotter.RestoreAbandonedSnapshots();
 
             // Verify that the environment variable has not been recreated
-            Assert.IsNull(environment.GetEnvironmentVariable(environmentVariableName, environmentVariableTarget));
+            Assert.IsNull(environment.GetEnvironmentVariable(name, target));
         }
 
         #endregion

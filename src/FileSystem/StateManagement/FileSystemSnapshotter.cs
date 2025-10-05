@@ -25,14 +25,14 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
         public ISnapshot SnapshotDirectory(string path)
         {
             var originator = new DirectoryOriginator(path, fileSystem);
-            var snapshot = new DirectoryCaretaker(originator, connection);
+            var snapshot = new DirectoryCaretaker(originator, this);
             return snapshot;
         }
 
         public ISnapshot SnapshotFile(string path)
         {
             var originator = new FileOriginator(path, fileCache, fileSystem);
-            var snapshot = new FileCaretaker(originator, connection);
+            var snapshot = new FileCaretaker(originator, this);
             return snapshot;
         }
     }

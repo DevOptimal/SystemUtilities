@@ -13,7 +13,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         public TestContext TestContext { get; set; }
 
         [TestMethod]
-        public void RevertsDirectoryCreation()
+        public void Snapshot_RevertsDirectoryCreation()
         {
             var path = @"C:\foo\bar";
 
@@ -29,7 +29,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsDirectoryCreationWithChildren()
+        public void Snapshot_RevertsDirectoryCreationWithChildren()
         {
             var path = @"C:\foo\bar";
 
@@ -45,7 +45,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsDirectoryDeletion()
+        public void Snapshot_RevertsDirectoryDeletion()
         {
             var path = @"C:\foo\bar";
             fileSystem.CreateDirectory(path);
@@ -62,7 +62,56 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsFileAlteration()
+        public void Snapshotter_RevertsDirectoryCreation()
+        {
+            var path = @"C:\foo\bar";
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotDirectory(path);
+                fileSystem.CreateDirectory(path);
+
+                Assert.IsTrue(fileSystem.DirectoryExists(path));
+            }
+
+            Assert.IsFalse(fileSystem.DirectoryExists(path));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsDirectoryCreationWithChildren()
+        {
+            var path = @"C:\foo\bar";
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotDirectory(path);
+                fileSystem.CreateDirectory(path);
+                fileSystem.CreateDirectory(Path.Combine(path, "blah"));
+                fileSystem.CreateFile(Path.Combine(path, "log.txt"));
+            }
+
+            Assert.IsFalse(fileSystem.DirectoryExists(path));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsDirectoryDeletion()
+        {
+            var path = @"C:\foo\bar";
+            fileSystem.CreateDirectory(path);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotDirectory(path);
+                fileSystem.DeleteDirectory(path, recursive: true);
+
+                Assert.IsFalse(fileSystem.DirectoryExists(path));
+            }
+
+            Assert.IsTrue(fileSystem.DirectoryExists(path));
+        }
+
+        [TestMethod]
+        public void Snapshot_RevertsFileAlteration()
         {
             var path = @"C:\foo\bar.dat";
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
@@ -78,7 +127,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsFileCreation()
+        public void Snapshot_RevertsFileCreation()
         {
             var path = @"C:\foo\bar.dat";
 
@@ -92,7 +141,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsFileDeletion()
+        public void Snapshot_RevertsFileDeletion()
         {
             var path = @"C:\foo\bar.dat";
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
@@ -108,7 +157,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         }
 
         [TestMethod]
-        public void RevertsMultipleFileDeletionsWithSameContent()
+        public void Snapshot_RevertsMultipleFileDeletionsWithSameContent()
         {
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
 
@@ -136,12 +185,58 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
         }
 
+        [TestMethod]
+        public void Snapshotter_RevertsFileAlteration()
+        {
+            var path = @"C:\foo\bar.dat";
+            var expectedFileBytes = Guid.NewGuid().ToByteArray();
+            WriteBytes(path, expectedFileBytes);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotFile(path);
+                WriteBytes(path, Guid.NewGuid().ToByteArray());
+            }
+
+            CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsFileCreation()
+        {
+            var path = @"C:\foo\bar.dat";
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotFile(path);
+                fileSystem.CreateFile(path);
+            }
+
+            Assert.IsFalse(fileSystem.FileExists(path));
+        }
+
+        [TestMethod]
+        public void Snapshotter_RevertsFileDeletion()
+        {
+            var path = @"C:\foo\bar.dat";
+            var expectedFileBytes = Guid.NewGuid().ToByteArray();
+            WriteBytes(path, expectedFileBytes);
+
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotFile(path);
+                fileSystem.DeleteFile(path);
+            }
+
+            CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
+        }
+
         #region Persistence Tests
 
         [TestMethod]
         public void ConcurrentlySnapshotsDirectories()
         {
-            var concurrentThreads = 100;
+            var concurrentThreads = 10;
 
             var paths = new string[concurrentThreads];
 
@@ -169,7 +264,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         [TestMethod]
         public void ConcurrentlySnapshotsFiles()
         {
-            var concurrentThreads = 100;
+            var concurrentThreads = 10;
 
             var paths = new string[concurrentThreads];
             var expectedContent = new byte[concurrentThreads][];

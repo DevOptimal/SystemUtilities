@@ -17,16 +17,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
                 nameof(SystemUtilities),
                 nameof(StateManagement)));
 
-        protected string ID { get; set; }
+        internal string ID { get; }
+        internal DatabaseConnection Connection { get; }
 
         protected bool disposedValue;
-
-        internal readonly DatabaseConnection connection;
 
         internal Snapshotter(CaretakerSerializer serializer, DirectoryInfo persistenceDirectory)
         {
             ID = Guid.NewGuid().ToString();
-            connection = new DatabaseConnection(GetType().Name, serializer, persistenceDirectory);
+            Connection = new DatabaseConnection(GetType().Name, serializer, persistenceDirectory);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -35,19 +34,19 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    connection.BeginTransaction();
+                    Connection.BeginTransaction();
                     try
                     {
-                        connection.UpdateCaretakers(RestoreCaretakers);
-                        connection.CommitTransaction();
+                        Connection.UpdateCaretakers(RestoreCaretakers);
+                        Connection.CommitTransaction();
                     }
                     catch
                     {
-                        connection.RollbackTransaction();
+                        Connection.RollbackTransaction();
                         throw;
                     }
 
-                    connection.Dispose();
+                    Connection.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
@@ -142,15 +141,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 
         public void RestoreAbandonedSnapshots()
         {
-            connection.BeginTransaction();
+            Connection.BeginTransaction();
             try
             {
-                connection.UpdateCaretakers(RestoreAbandonedCaretakers);
-                connection.CommitTransaction();
+                Connection.UpdateCaretakers(RestoreAbandonedCaretakers);
+                Connection.CommitTransaction();
             }
             catch
             {
-                connection.RollbackTransaction();
+                Connection.RollbackTransaction();
                 throw;
             }
         }

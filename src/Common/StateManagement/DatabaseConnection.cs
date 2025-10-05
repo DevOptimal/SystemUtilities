@@ -11,8 +11,6 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
 {
     internal class DatabaseConnection : IDisposable
     {
-        public string ID { get; set; }
-
         private Mutex mutex;
         private readonly CaretakerSerializer serializer;
 
@@ -33,8 +31,6 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.json"));
             transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.Transaction.json"));
-
-            ID = Guid.NewGuid().ToString();
 
             // Get normalized file path
             var normalizedDatabaseID = Path.GetFullPath(databaseFile.FullName).Replace('\\', '/');
@@ -156,9 +152,9 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 throw new ObjectDisposedException(nameof(DatabaseConnection));
             }
+            using (reader)
             using (var stream = File.Open(transactionFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None))
             using (var writer = new JsonWriter(stream))
-            using (reader)
             {
                 serializer.WriteCaretakers(writer, transaction);
             }
@@ -175,15 +171,15 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (disposing)
                 {
-                    if (reader != null)
-                    {
-                        reader.Dispose();
-                        reader = null;
-                    }
-                    transaction = null;
-                    mutex.Dispose();
-                    mutex = null;
                 }
+                if (reader != null)
+                {
+                    reader.Dispose();
+                    reader = null;
+                }
+                transaction = null;
+                mutex.Dispose();
+                mutex = null;
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null

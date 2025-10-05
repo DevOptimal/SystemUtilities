@@ -5,8 +5,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
 {
     internal class FileCaretaker : Caretaker<FileOriginator, FileMemento>
     {
-        public FileCaretaker(FileOriginator originator, DatabaseConnection connection)
-            : base(originator, connection)
+        public FileCaretaker(FileOriginator originator, FileSystemSnapshotter snapshotter)
+            : base(originator, snapshotter)
         {
         }
 

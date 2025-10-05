@@ -6,8 +6,8 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
 {
     internal class EnvironmentVariableCaretaker : Caretaker<EnvironmentVariableOriginator, EnvironmentVariableMemento>
     {
-        public EnvironmentVariableCaretaker(EnvironmentVariableOriginator originator, DatabaseConnection connection)
-            : base(originator, connection)
+        public EnvironmentVariableCaretaker(EnvironmentVariableOriginator originator, EnvironmentSnapshotter snapshotter)
+            : base(originator, snapshotter)
         {
         }
 
