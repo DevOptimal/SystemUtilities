@@ -1,4 +1,5 @@
-﻿using DevOptimal.SystemUtilities.FileSystem.StateManagement;
+﻿using DevOptimal.SystemUtilities.FileSystem.Extensions;
+using DevOptimal.SystemUtilities.FileSystem.StateManagement;
 using System;
 using System.IO;
 using System.Linq;
@@ -134,7 +135,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
             using var snapshotter = CreateSnapshotter();
             using (snapshotter.SnapshotFile(path))
             {
-                fileSystem.CreateFile(path);
+                fileSystem.WriteAllTextToFile(path, "foo bar");
             }
 
             Assert.IsFalse(fileSystem.FileExists(path));
@@ -145,6 +146,36 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.StateManagement
         {
             var path = @"C:\foo\bar.dat";
             var expectedFileBytes = Guid.NewGuid().ToByteArray();
+            WriteBytes(path, expectedFileBytes);
+
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotFile(path))
+            {
+                fileSystem.DeleteFile(path);
+            }
+
+            CollectionAssert.AreEqual(expectedFileBytes, ReadBytes(path));
+        }
+
+        [TestMethod]
+        public void Snapshot_RevertsEmptyFileCreation()
+        {
+            var path = @"C:\foo\bar.dat";
+
+            using var snapshotter = CreateSnapshotter();
+            using (snapshotter.SnapshotFile(path))
+            {
+                fileSystem.CreateFile(path);
+            }
+
+            Assert.IsFalse(fileSystem.FileExists(path));
+        }
+
+        [TestMethod]
+        public void Snapshot_RevertsEmptyFileDeletion()
+        {
+            var path = @"C:\foo\bar.dat";
+            var expectedFileBytes = Array.Empty<byte>();
             WriteBytes(path, expectedFileBytes);
 
             using var snapshotter = CreateSnapshotter();

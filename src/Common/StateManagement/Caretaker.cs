@@ -70,7 +70,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 if (caretaker.ID == ID)
                 {
-                    throw new ResourceLockedException($"The resource with ID '{ID}' is locked by another caretaker.");
+                    throw new ResourceLockedException($"The resource with ID '{ID}' is locked by another snapshotter (ID '{caretaker.ParentID}').");
                 }
                 yield return caretaker;
             }
