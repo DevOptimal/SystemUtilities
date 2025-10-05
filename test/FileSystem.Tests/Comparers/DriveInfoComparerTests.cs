@@ -27,8 +27,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
             }
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void ComparesTwoDifferentDrives(IEqualityComparer<DriveInfo> comparer)
         {
             var drives = new HashSet<DriveInfo>(comparer)
@@ -36,11 +36,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\"),
                 new(@"D:\")
             };
-            Assert.AreEqual(2, drives.Count);
+            Assert.HasCount(2, drives);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(DifferentCasingDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(DifferentCasingDataSet))]
         public void ComparesSameDriveDifferentCasing(IEqualityComparer<DriveInfo> comparer, int expectedCount)
         {
             var drives = new HashSet<DriveInfo>(comparer)
@@ -48,11 +48,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\"),
                 new(@"c:\")
             };
-            Assert.AreEqual(expectedCount, drives.Count);
+            Assert.HasCount(expectedCount, drives);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void ComparesSameDriveTrailingSlash(IEqualityComparer<DriveInfo> comparer)
         {
             var drives = new HashSet<DriveInfo>(comparer)
@@ -60,7 +60,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:"),
                 new(@"C:\")
             };
-            Assert.AreEqual(1, drives.Count);
+            Assert.HasCount(1, drives);
         }
     }
 }
