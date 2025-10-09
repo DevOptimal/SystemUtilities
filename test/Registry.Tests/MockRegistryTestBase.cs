@@ -1,8 +1,5 @@
 ﻿using DevOptimal.SystemUtilities.Registry.Abstractions;
-using Microsoft.QualityTools.Testing.Fakes;
 using Microsoft.Win32;
-using System;
-using System.Diagnostics.Fakes;
 using System.Runtime.Versioning;
 
 namespace DevOptimal.SystemUtilities.Registry.Tests
@@ -30,16 +27,6 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         public void TestInitialize()
         {
             registry = new MockRegistry();
-        }
-
-        protected static IDisposable CreateShimsContext()
-        {
-            var context = ShimsContext.Create();
-
-            ShimProcess.AllInstances.IdGet = p => System.Environment.ProcessId + 1;
-            ShimProcess.AllInstances.StartTimeGet = p => DateTime.Now;
-
-            return context;
         }
     }
 }

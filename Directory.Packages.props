@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
-    <PackageVersion Include="Microsoft.QualityTools.Testing.Fakes" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.QualityTools.Testing.Fakes" Version="17.5.0-beta.23060.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.205" />

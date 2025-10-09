@@ -139,57 +139,6 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         }
 
         [TestMethod]
-        [TestCategory("OmitFromCI")] // Fakes require Visual Studio Enterprise, but agent machines only have Community installed.
-        public void RestoresAbandonedEnvironmentVariableSnapshots()
-        {
-            using var restoreSnapshotter = CreateSnapshotter();
-
-            /*
-             * First, we will test restoring an environment variable that didn't exist when the snapshot was taken, but has since been created
-             */
-            // Delete the environment variable
-            environment.SetEnvironmentVariable(name, null, target);
-
-            // Simulate taking a snapshot of the environment variable from another process
-            using (CreateShimsContext())
-            {
-                var systemStateManager = CreateSnapshotter();
-                systemStateManager.SnapshotEnvironmentVariable(name, target);
-            }
-
-            // Create the environment variable
-            environment.SetEnvironmentVariable(name, expectedValue, target);
-
-            // Restore the snapshot
-            restoreSnapshotter.RestoreAbandonedSnapshots();
-
-            // Verify that the environment variable has been deleted
-            Assert.IsNull(environment.GetEnvironmentVariable(name, target));
-
-            /*
-             * Next, we will test restoring an environment variable that did exist when the snapshot was taken, but has since been deleted
-             */
-            // Create the environment variable
-            environment.SetEnvironmentVariable(name, expectedValue, target);
-
-            // Simulate taking a snapshot of the environment variable from another process
-            using (CreateShimsContext())
-            {
-                var systemStateManager = CreateSnapshotter();
-                systemStateManager.SnapshotEnvironmentVariable(name, target);
-            }
-
-            // Delete the environment variable
-            environment.SetEnvironmentVariable(name, null, target);
-
-            // Restore the snapshot
-            restoreSnapshotter.RestoreAbandonedSnapshots();
-
-            // Verify that the environment variable has been created
-            Assert.AreEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
-        }
-
-        [TestMethod]
         public void DoesNotRestoreSnapshotsFromCurrentProcess()
         {
             using var snapshotter = CreateSnapshotter();
@@ -201,33 +150,6 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
 
             snapshotter.RestoreAbandonedSnapshots();
             Assert.AreNotEqual(expectedValue, environment.GetEnvironmentVariable(name, target));
-        }
-
-        [TestMethod]
-        [TestCategory("OmitFromCI")] // Fakes require Visual Studio Enterprise, but agent machines only have Community installed.
-        public void DoesNotRestoreProcessScopedEnvironmentVariableSnapshots()
-        {
-            using var restoreSnapshotter = CreateSnapshotter();
-            var target = EnvironmentVariableTarget.Process;
-
-            // Create the environment variable
-            environment.SetEnvironmentVariable(name, expectedValue, target);
-
-            // Simulate taking a snapshot of the environment variable from another process
-            using (CreateShimsContext())
-            {
-                var snapshotter = CreateSnapshotter();
-                snapshotter.SnapshotEnvironmentVariable(name, target);
-            }
-
-            // Delete the environment variable
-            environment.SetEnvironmentVariable(name, null, target);
-
-            // Restore the snapshot
-            restoreSnapshotter.RestoreAbandonedSnapshots();
-
-            // Verify that the environment variable has not been recreated
-            Assert.IsNull(environment.GetEnvironmentVariable(name, target));
         }
 
         #endregion
