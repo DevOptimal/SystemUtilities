@@ -12,10 +12,19 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
     /// Serializes and deserializes caretakers for file system resources (directories and files).
     /// Designed for efficient resource usage by streaming caretakers from a JSON source.
     /// </summary>
-    internal class FileSystemCaretakerSerializer(IFileSystem fileSystem, IFileCache fileCache) : CaretakerSerializer
+    internal class FileSystemCaretakerSerializer : CaretakerSerializer
     {
         private const string directoryResourceTypeName = "Directory";
         private const string fileResourceTypeName = "File";
+
+        private readonly IFileSystem fileSystem;
+        private readonly IFileCache fileCache;
+
+        public FileSystemCaretakerSerializer(IFileSystem fileSystem, IFileCache fileCache)
+        {
+            this.fileSystem = fileSystem;
+            this.fileCache = fileCache;
+        }
 
         /// <summary>
         /// Converts a dictionary representation of a caretaker to an ICaretaker instance.

@@ -11,14 +11,20 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Caching
     /// </summary>
     /// <param name="zipFile">The zip file used as the cache.</param>
     /// <param name="fileSystem">The file system abstraction.</param>
-    public class ZipFileCache(FileInfo zipFile, IFileSystem fileSystem) : IFileCache
+    public class ZipFileCache : IFileCache
     {
+        private readonly FileInfo zipFile;
+
         /// <summary>
         /// Gets or sets the file system abstraction.
         /// </summary>
-        public IFileSystem FileSystem { get; set; } = fileSystem;
+        public IFileSystem FileSystem { get; set; }
 
-        private readonly FileInfo zipFile = zipFile;
+        public ZipFileCache(FileInfo zipFile, IFileSystem fileSystem)
+        {
+            this.zipFile = zipFile;
+            FileSystem = fileSystem;
+        }
 
         /// <summary>
         /// Downloads a file from the zip cache to the specified destination path.

@@ -12,32 +12,40 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
     /// <param name="view">The registry view.</param>
     /// <param name="subKey">The registry subkey path.</param>
     /// <param name="registry">The registry abstraction.</param>
-    internal class RegistryKeyOriginator(RegistryHive hive, RegistryView view, string subKey, IRegistry registry) : IOriginator<RegistryKeyMemento>
+    internal class RegistryKeyOriginator : IOriginator<RegistryKeyMemento>
     {
         /// <summary>
         /// Gets the registry hive.
         /// </summary>
-        public RegistryHive Hive { get; } = hive;
+        public RegistryHive Hive { get; }
 
         /// <summary>
         /// Gets the registry view.
         /// </summary>
-        public RegistryView View { get; } = view;
+        public RegistryView View { get; }
 
         /// <summary>
         /// Gets the registry subkey path.
         /// </summary>
-        public string SubKey { get; } = subKey;
+        public string SubKey { get; }
 
         /// <summary>
         /// Gets the registry abstraction.
         /// </summary>
-        public IRegistry Registry { get; } = registry ?? throw new ArgumentNullException(nameof(registry));
+        public IRegistry Registry { get; }
 
         /// <summary>
         /// Gets the unique identifier for this registry key originator.
         /// </summary>
         public string ID => $@"{Hive}\{View}\{SubKey}".ToLower();
+
+        public RegistryKeyOriginator(RegistryHive hive, RegistryView view, string subKey, IRegistry registry)
+        {
+            Hive = hive;
+            View = view;
+            SubKey = subKey;
+            Registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        }
 
         /// <summary>
         /// Captures the current state of the registry key as a memento.

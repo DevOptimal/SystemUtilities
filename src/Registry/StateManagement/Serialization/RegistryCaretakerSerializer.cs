@@ -14,10 +14,17 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
     /// Serializes and deserializes caretakers for registry resources (keys and values).
     /// Designed for efficient resource usage by streaming caretakers from a JSON source.
     /// </summary>
-    internal class RegistryCaretakerSerializer(IRegistry registry) : CaretakerSerializer
+    internal class RegistryCaretakerSerializer : CaretakerSerializer
     {
         private const string registryKeyResourceTypeName = "RegistryKey";
         private const string registryValueResourceTypeName = "RegistryValue";
+
+        private readonly IRegistry registry;
+
+        public RegistryCaretakerSerializer(IRegistry registry)
+        {
+            this.registry = registry;
+        }
 
         /// <summary>
         /// Converts a dictionary representation of a caretaker to an ICaretaker instance.
@@ -144,7 +151,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                 default:
                     throw new NotSupportedException($"{value.GetType().Name} is not a supported registry type.");
             }
-            return Convert.ToBase64String([.. result]);
+            return Convert.ToBase64String(result.ToArray());
         }
 
         private static object ConvertToRegistryValue(object o)

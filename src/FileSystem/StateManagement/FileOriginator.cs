@@ -14,22 +14,22 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
     /// <param name="path">The file path.</param>
     /// <param name="fileCache">The file cache for storing file contents.</param>
     /// <param name="fileSystem">The file system abstraction.</param>
-    internal class FileOriginator(string path, IFileCache fileCache, IFileSystem fileSystem) : IOriginator<FileMemento>
+    internal class FileOriginator : IOriginator<FileMemento>
     {
         /// <summary>
         /// Gets the full path of the file.
         /// </summary>
-        public string Path { get; } = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+        public string Path { get; }
 
         /// <summary>
         /// Gets the file cache for storing file contents.
         /// </summary>
-        public IFileCache FileCache { get; } = fileCache ?? throw new ArgumentNullException(nameof(fileCache));
+        public IFileCache FileCache { get; }
 
         /// <summary>
         /// Gets the file system abstraction.
         /// </summary>
-        public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        public IFileSystem FileSystem { get; }
 
         /// <summary>
         /// Gets the unique identifier for this file originator, normalized by platform.
@@ -55,6 +55,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
                     throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
                 }
             }
+        }
+
+        public FileOriginator(string path, IFileCache fileCache, IFileSystem fileSystem)
+        {
+            Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+            FileCache = fileCache ?? throw new ArgumentNullException(nameof(fileCache));
+            FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         /// <summary>

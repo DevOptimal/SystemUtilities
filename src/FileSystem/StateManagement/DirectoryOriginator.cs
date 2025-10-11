@@ -11,17 +11,17 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
     /// </summary>
     /// <param name="path">The directory path.</param>
     /// <param name="fileSystem">The file system abstraction.</param>
-    internal class DirectoryOriginator(string path, IFileSystem fileSystem) : IOriginator<DirectoryMemento>
+    internal class DirectoryOriginator : IOriginator<DirectoryMemento>
     {
         /// <summary>
         /// Gets the full path of the directory.
         /// </summary>
-        public string Path { get; } = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+        public string Path { get; }
 
         /// <summary>
         /// Gets the file system abstraction.
         /// </summary>
-        public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        public IFileSystem FileSystem { get; }
 
         /// <summary>
         /// Gets the unique identifier for this directory originator, normalized by platform.
@@ -47,6 +47,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
                     throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
                 }
             }
+        }
+
+        public DirectoryOriginator(string path, IFileSystem fileSystem)
+        {
+            Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+            FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         /// <summary>
