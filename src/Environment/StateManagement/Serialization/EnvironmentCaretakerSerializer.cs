@@ -10,12 +10,19 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
     /// Serializes and deserializes environment variable caretakers for efficient resource usage.
     /// Streams caretakers from JSON to avoid loading all into memory at once.
     /// </summary>
-    internal class EnvironmentCaretakerSerializer(IEnvironment environment) : CaretakerSerializer
+    internal class EnvironmentCaretakerSerializer : CaretakerSerializer
     {
         /// <summary>
         /// The resource type name for environment variable caretakers in serialized data.
         /// </summary>
         private const string environmentVariableResourceTypeName = "EnvironmentVariable";
+
+        private readonly IEnvironment environment;
+
+        public EnvironmentCaretakerSerializer(IEnvironment environment)
+        {
+            this.environment = environment ?? throw new ArgumentNullException(nameof(environment));
+        }
 
         /// <summary>
         /// Converts a dictionary representation of a caretaker to an <see cref="ICaretaker"/> instance.

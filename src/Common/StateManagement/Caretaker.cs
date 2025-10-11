@@ -64,7 +64,11 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 throw new ArgumentNullException(nameof(snapshotter));
             }
-            Originator = originator ?? throw new ArgumentNullException(nameof(originator));
+            if (originator == null)
+            {
+                throw new ArgumentNullException(nameof(originator));
+            }
+            Originator = originator;
             Connection = snapshotter.Connection ?? throw new ArgumentNullException(nameof(snapshotter.Connection));
             ID = originator.ID;
             ParentID = snapshotter.ID;
@@ -104,8 +108,14 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             ProcessID = processID;
             ProcessStartTime = processStartTime;
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            Originator = originator ?? throw new ArgumentNullException(nameof(originator));
-            Memento = memento ?? throw new ArgumentNullException(nameof(memento));
+            if (originator == null) {
+                throw new ArgumentNullException(nameof(originator));
+            }
+            Originator = originator;
+            if (memento == null) {
+                throw new ArgumentNullException(nameof(memento));
+            }
+            Memento = memento;
         }
 
         /// <summary>

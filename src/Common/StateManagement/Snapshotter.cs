@@ -17,7 +17,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         /// <summary>
         /// The default directory for persisting caretaker data.
         /// </summary>
-        protected static readonly DirectoryInfo defaultPersistenceDirectory = new(
+        protected static readonly DirectoryInfo defaultPersistenceDirectory = new DirectoryInfo(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 nameof(DevOptimal),

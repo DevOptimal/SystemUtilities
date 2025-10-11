@@ -9,22 +9,22 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
     /// Originator implementation for environment variables in the Memento pattern.
     /// Encapsulates the logic for capturing and restoring the value of an environment variable.
     /// </summary>
-    internal class EnvironmentVariableOriginator(string name, EnvironmentVariableTarget target, IEnvironment environment) : IOriginator<EnvironmentVariableMemento>
+    internal class EnvironmentVariableOriginator : IOriginator<EnvironmentVariableMemento>
     {
         /// <summary>
         /// Gets the name of the environment variable.
         /// </summary>
-        public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+        public string Name { get; }
 
         /// <summary>
         /// Gets the target location of the environment variable (e.g., Process, User, Machine).
         /// </summary>
-        public EnvironmentVariableTarget Target { get; } = target;
+        public EnvironmentVariableTarget Target { get; }
 
         /// <summary>
         /// Gets the environment abstraction used for variable operations.
         /// </summary>
-        public IEnvironment Environment { get; } = environment ?? throw new ArgumentNullException(nameof(environment));
+        public IEnvironment Environment { get; }
 
         /// <summary>
         /// Gets a unique identifier for this originator, normalized for the current operating system.
@@ -50,6 +50,13 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
                     throw new NotSupportedException($"The operating system '{RuntimeInformation.OSDescription}' is not supported.");
                 }
             }
+        }
+
+        public EnvironmentVariableOriginator(string name, EnvironmentVariableTarget target, IEnvironment environment)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Target = target;
+            Environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
         /// <summary>

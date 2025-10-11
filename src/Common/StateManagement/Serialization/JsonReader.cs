@@ -1,6 +1,7 @@
 ﻿using DevOptimal.SystemUtilities.Common.StateManagement.Exceptions;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
@@ -309,7 +310,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement.Serialization
         /// <returns>The parsed array.</returns>
         public object[] ReadArray()
         {
-            return [.. EnumerateArray()];
+            return EnumerateArray().ToArray();
         }
 
         /// <summary>

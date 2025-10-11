@@ -10,9 +10,10 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
     /// Provides snapshotting functionality for environment variables.
     /// Supports capturing and restoring environment variable state using the Memento pattern.
     /// </summary>
-    public class EnvironmentSnapshotter(IEnvironment environment, DirectoryInfo persistenceDirectory)
-        : Snapshotter(new EnvironmentCaretakerSerializer(environment), persistenceDirectory)
+    public class EnvironmentSnapshotter : Snapshotter
     {
+        private IEnvironment environment;
+
         /// <summary>
         /// Initializes a new instance of <see cref="EnvironmentSnapshotter"/> using the default environment and default persistence directory.
         /// </summary>
@@ -35,6 +36,12 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
         public EnvironmentSnapshotter(DirectoryInfo persistenceDirectory)
             : this(new DefaultEnvironment(), persistenceDirectory)
         { }
+
+        public EnvironmentSnapshotter(IEnvironment environment, DirectoryInfo persistenceDirectory)
+            : base(new EnvironmentCaretakerSerializer(environment), persistenceDirectory)
+        {
+            this.environment = environment ?? throw new ArgumentNullException(nameof(environment));
+        }
 
         /// <summary>
         /// Captures a snapshot of the specified environment variable and returns a disposable snapshot object.

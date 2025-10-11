@@ -42,8 +42,8 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             }
 
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            databaseFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.json"));
-            transactionFile = new(Path.Combine(persistenceDirectory.FullName, $"{name}.Transaction.json"));
+            databaseFile = new FileInfo(Path.Combine(persistenceDirectory.FullName, $"{name}.json"));
+            transactionFile = new FileInfo(Path.Combine(persistenceDirectory.FullName, $"{name}.Transaction.json"));
 
             // Get normalized file path for mutex ID
             var normalizedDatabaseID = Path.GetFullPath(databaseFile.FullName).Replace('\\', '/');
