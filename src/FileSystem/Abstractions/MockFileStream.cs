@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -97,7 +98,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                     }
                     else
                     {
-                        fileSystem.data[path] = [.. bytes];
+                        fileSystem.data[path] = bytes.ToList();
                     }
                 }
 
@@ -147,7 +148,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                 // If this is the first reference and the file exists in the mock file system, initialize the temp file.
                 if (fileReferenceCounter[temporaryFilePath] == 0 && fileSystem.FileExists(path))
                 {
-                    File.WriteAllBytes(temporaryFilePath, [.. fileSystem.data[path]]);
+                    File.WriteAllBytes(temporaryFilePath, fileSystem.data[path].ToArray());
                 }
 
                 fileReferenceCounter[temporaryFilePath]++;

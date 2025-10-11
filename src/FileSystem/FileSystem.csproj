@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <Description>Library for interacting with file system resources, such as directories and files.</Description>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
