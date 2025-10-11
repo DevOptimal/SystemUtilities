@@ -1,93 +1,153 @@
-# System Utilities
+# DevOptimal.SystemUtilities Documentation
 
-This repo consists of tools that are helpful when interacting with the host system.
+Welcome to the comprehensive documentation for DevOptimal.SystemUtilities! This collection of .NET libraries provides powerful abstractions for common system resources like environment variables, file systems, and the Windows Registry.
 
-## Abstractions
+## 🚀 Quick Start
 
-This repo provides a set of interfaces that can be used to add a layer of abstraction between your code and the host system's [environment](../src/Environment/IEnvironment.cs), [file system](../src/FileSystem/IFileSystem.cs), and/or [registry](../src/Registry/IRegistry.cs) (Windows OSes only). This facilitates inversion of control patterns such as [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection), making it easy to swap out the implementations of common system operations.
+New to SystemUtilities? Start here:
 
-This is particularly useful in testing, because it greatly simplifies the code required to mock system resources without having to rely on complex fakes frameworks. This repo provides mock implementations for the system's [environment](../src/Environment/MockEnvironment.cs), [file system](../src/FileSystem/MockFileSystem.cs), and [registry](../src/Registry/MockRegistry.cs) (Windows OSes only).
+- **[Getting Started Guide](getting-started.md)** - Installation, basic usage, and examples
+- **[API Reference](api-reference.md)** - Complete API documentation
 
-### Usage
+## 📚 Library Documentation
 
-To leverage these abstractions in your code, simply replace any calls to functions that operate on a system resource with the correponding method on the interface representing that resource.
+### Core Libraries
 
-For example, suppose you have an app that needs to set an environment variable named "Foo". Normally, you might use .NET's [`System.Environment.SetEnvironmentVariable`](https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable) API:
+- **[Environment Library](environment.md)** - Environment variable abstractions and management
+- **[FileSystem Library](filesystem.md)** - File system abstractions, extensions, and utilities  
+- **[Registry Library](registry.md)** - Windows Registry abstractions and operations
+
+### Core Concepts
+
+- **[Abstractions Overview](abstractions.md)** - Understanding the abstraction pattern and dependency injection
+- **[State Management](state-management.md)** - Snapshot and restore system state
+
+## 🎯 What's Inside
+
+### Environment Library (`DevOptimal.SystemUtilities.Environment`)
+- `IEnvironment` interface for environment variable operations
+- `DefaultEnvironment` and `MockEnvironment` implementations
+- Environment variable snapshotting and restoration
+- Support for Process, User, and Machine-level variables
+
+### FileSystem Library (`DevOptimal.SystemUtilities.FileSystem`)
+- `IFileSystem` interface for file and directory operations
+- `DefaultFileSystem` and `MockFileSystem` implementations
+- Rich extension methods for `DirectoryInfo`, `FileInfo`, and `DriveInfo`
+- Platform-aware file system comparers
+- File system snapshotting and restoration
+- Temporary file management
+
+### Registry Library (`DevOptimal.SystemUtilities.Registry`)
+- `IRegistry` interface for Windows Registry operations
+- `DefaultRegistry` and `MockRegistry` implementations
+- Registry path utilities and normalization
+- Registry key and value snapshotting
+- Support for all registry hives and views
+
+## 🛠️ Key Features
+
+- ✅ **Testable by Design** - Mock implementations for all system resources
+- ✅ **Dependency Injection Ready** - Perfect for modern .NET applications
+- ✅ **Cross-Platform** - Works on Windows, macOS, and Linux (Registry is Windows-only)
+- ✅ **State Management** - Snapshot and restore system state
+- ✅ **Rich Extensions** - Enhanced functionality for standard .NET types
+- ✅ **Type Safe** - Strongly-typed interfaces and implementations
+
+## 📦 Installation
+
+Install via NuGet Package Manager:
+
+```bash
+# Install individual libraries
+dotnet add package DevOptimal.SystemUtilities.Environment
+dotnet add package DevOptimal.SystemUtilities.FileSystem
+dotnet add package DevOptimal.SystemUtilities.Registry
+
+# Or use Package Manager Console
+Install-Package DevOptimal.SystemUtilities.Environment
+Install-Package DevOptimal.SystemUtilities.FileSystem
+Install-Package DevOptimal.SystemUtilities.Registry
+```
+
+## 🎨 Quick Example
+
 ```csharp
-using System;
+using DevOptimal.SystemUtilities.FileSystem.Abstractions;
+using DevOptimal.SystemUtilities.Environment.Abstractions;
 
-namespace MyCompany
+public class DocumentProcessor
 {
-    public class MyApp
+    private readonly IFileSystem _fileSystem;
+    private readonly IEnvironment _environment;
+    
+    public DocumentProcessor(IFileSystem fileSystem, IEnvironment environment)
     {
-        public MyApp()
-        {
-        }
-
-        public void InitFoo()
-        {
-            Environment.SetEnvironmentVariable("Foo", "Bar");
-        }
+        _fileSystem = fileSystem ?? new DefaultFileSystem();
+        _environment = environment ?? new DefaultEnvironment();
+    }
+    
+    public void ProcessDocument(string inputPath)
+    {
+        // Testable file operations
+        if (!_fileSystem.FileExists(inputPath))
+            throw new FileNotFoundException($"File not found: {inputPath}");
+            
+        var content = _fileSystem.ReadAllText(inputPath);
+        
+        // Testable environment access
+        var outputDir = _environment.GetEnvironmentVariable("OUTPUT_DIR", EnvironmentVariableTarget.Process)
+                       ?? @"C:\temp";
+                       
+        var outputPath = Path.Combine(outputDir, "processed_" + Path.GetFileName(inputPath));
+        _fileSystem.WriteAllText(outputPath, ProcessContent(content));
     }
 }
 ```
-The problem with this approach is that it is difficult to mock the `SetEnvironmentVariable`. Unit testing this code would generally require the use of a heavy-weight framework, such as [Microsoft Fakes](https://docs.microsoft.com/en-us/visualstudio/test/isolating-code-under-test-with-microsoft-fakes).
 
-A better approach would be to reference the `SetEnvironmentVariable` method on the `IEnvironment` interface provided by this repository:
+## 🧪 Testing Made Easy
+
 ```csharp
-using DevOptimal.SystemUtilities.Environment;
-
-namespace MyCompany
+[TestMethod]
+public void ProcessDocument_CreatesProcessedFile()
 {
-    public class MyApp
-    {
-        private readonly IEnvironment environment;
-
-        public MyApp()
-            : this(new DefaultEnvironment())
-        {
-        }
-
-        public MyApp(IEnvironment environment)
-        {
-            this.environment = environment;
-        }
-
-        public void InitFoo()
-        {
-           environment.SetEnvironmentVariable("Foo", "Bar");
-        }
-    }
+    // Arrange - No real file system needed!
+    var mockFileSystem = new MockFileSystem();
+    var mockEnvironment = new MockEnvironment();
+    var processor = new DocumentProcessor(mockFileSystem, mockEnvironment);
+    
+    mockEnvironment.SetEnvironmentVariable("OUTPUT_DIR", @"C:\output", EnvironmentVariableTarget.Process);
+    mockFileSystem.CreateDirectory(@"C:\input");
+    mockFileSystem.WriteAllText(@"C:\input\test.txt", "original content");
+    
+    // Act
+    processor.ProcessDocument(@"C:\input\test.txt");
+    
+    // Assert
+    Assert.IsTrue(mockFileSystem.FileExists(@"C:\output\processed_test.txt"));
 }
 ```
-Which allows you to pass in any implementation of the `IEnvironment` interface.
 
-Say that you would like to write a unit test that exercises the `InitFoo` method of your `MyApp` type. Your test would then look something like this:
-```csharp
-using DevOptimal.SystemUtilities.Environment;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MyCompany;
+## 📖 Documentation Structure
 
-namespace MyCompany.UnitTests
-{
-    [TestClass]
-    public class MyAppTests
-    {
-        private readonly IEnvironment environment;
+This documentation is organized to help you find what you need quickly:
 
-        public MyAppTests()
-        {
-            environment = new MockEnvironment();
-        }
+1. **[Getting Started](getting-started.md)** - Begin here for installation and basic concepts
+2. **[Library Guides](environment.md)** - Deep dives into each library's features
+3. **[Core Concepts](abstractions.md)** - Understanding the architectural patterns
+4. **[API Reference](api-reference.md)** - Complete method and class documentation
 
-        [TestMethod]
-        public void InitFoo_SetsEnvironmentVariable()
-        {
-            var app = new MyApp(environment);
-            app.InitFoo();
+## 🎯 Target Frameworks
 
-            Assert.AreEqual("Bar", environment.GetEnvironmentVariable("Foo"));
-        }
-    }
-}
-```
+- **.NET Standard 2.0** - Compatible with .NET Framework 4.6.1+ and .NET Core 2.0+
+- **Cross-Platform** - Works on Windows, macOS, and Linux
+- **Registry Library** - Windows-only (other libraries work on all platforms)
+
+## 🤝 Contributing
+
+We welcome contributions! See our [contributing guidelines](../CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Building and testing the libraries
+- Submitting pull requests
+- Coding standards and best practices

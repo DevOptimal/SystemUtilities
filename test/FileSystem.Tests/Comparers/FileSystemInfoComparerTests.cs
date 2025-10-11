@@ -27,8 +27,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
             }
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void ComparesTwoDifferentFiles(IEqualityComparer<FileSystemInfo> comparer)
         {
             var files = new HashSet<FileInfo>(comparer)
@@ -36,11 +36,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\foo.txt"),
                 new(@"C:\temp\bar.txt")
             };
-            Assert.AreEqual(2, files.Count);
+            Assert.HasCount(2, files);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(DifferentCasingDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(DifferentCasingDataSet))]
         public void ComparesSameFileDifferentCasing(IEqualityComparer<FileSystemInfo> comparer, int expectedCount)
         {
             var files = new HashSet<FileInfo>(comparer)
@@ -48,11 +48,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\foo.txt"),
                 new(@"C:\temp\FOO.txt")
             };
-            Assert.AreEqual(expectedCount, files.Count);
+            Assert.HasCount(expectedCount, files);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void ComparesTwoDifferentDirectories(IEqualityComparer<FileSystemInfo> comparer)
         {
             var directories = new HashSet<DirectoryInfo>(comparer)
@@ -60,11 +60,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\foo"),
                 new(@"C:\temp\bar")
             };
-            Assert.AreEqual(2, directories.Count);
+            Assert.HasCount(2, directories);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(DifferentCasingDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(DifferentCasingDataSet))]
         public void ComparesSameDirectoryDifferentCasing(IEqualityComparer<FileSystemInfo> comparer, int expectedCount)
         {
             var directories = new HashSet<DirectoryInfo>(comparer)
@@ -72,11 +72,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\foo"),
                 new(@"C:\temp\FOO")
             };
-            Assert.AreEqual(expectedCount, directories.Count);
+            Assert.HasCount(expectedCount, directories);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void ComparesSameDirectoryTrailingSlash(IEqualityComparer<FileSystemInfo> comparer)
         {
             var directories = new HashSet<DirectoryInfo>(comparer)
@@ -84,11 +84,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\foo"),
                 new(@"C:\temp\foo\")
             };
-            Assert.AreEqual(1, directories.Count);
+            Assert.HasCount(1, directories);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void HandlesParentDirectoryReferences(IEqualityComparer<FileSystemInfo> comparer)
         {
             var files = new HashSet<FileInfo>(comparer)
@@ -96,11 +96,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\bar\..\foo.txt"),
                 new(@"C:\temp\foo.txt")
             };
-            Assert.AreEqual(1, files.Count);
+            Assert.HasCount(1, files);
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(SameBehaviorDataSet), DynamicDataSourceType.Property)]
+        [TestMethod]
+        [DynamicData(nameof(SameBehaviorDataSet))]
         public void HandlesCurrentDirectoryReferences(IEqualityComparer<FileSystemInfo> comparer)
         {
             var files = new HashSet<FileInfo>(comparer)
@@ -108,7 +108,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Comparers
                 new(@"C:\temp\\.\foo.txt"),
                 new(@"C:\temp\foo.txt")
             };
-            Assert.AreEqual(1, files.Count);
+            Assert.HasCount(1, files);
         }
     }
 }

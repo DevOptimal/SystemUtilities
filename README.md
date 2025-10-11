@@ -12,6 +12,14 @@
     - Easily swap out the underlying implementations of common system resource operations (e.g. environment variables, files, and registry keys)
     - Mock implementations of system resources for easy testing
     - Serialization-friendly
+- System resource state management
+    - Programatically snapshot and restore the state of the following system resources:
+        - Environment variables
+        - Directories
+        - Files
+        - Registry keys
+        - Registry values
+    - Persisted to disk so that you never lose state, even if the process crashes!
 
 ## Documentation
 

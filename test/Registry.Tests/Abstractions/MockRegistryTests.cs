@@ -1,36 +1,46 @@
-﻿using DevOptimal.SystemUtilities.Registry.Abstractions;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Versioning;
 
-namespace DevOptimal.SystemUtilities.Registry.Tests
+namespace DevOptimal.SystemUtilities.Registry.Tests.Abstractions
 {
     [TestClass]
     [SupportedOSPlatform("windows")]
-    public class RegistryValueTests
+    public class MockRegistryTests : MockRegistryTestBase
     {
-        private MockRegistry registry;
-
-        private const RegistryHive hive = RegistryHive.LocalMachine;
-
-        private const RegistryView view = RegistryView.Default;
-
-        private const string subKey = @"SOFTWARE\Microsoft\Windows";
-
-        private const string name = "foo";
-
-        private const string defaultValueName = "(Default)";
-
-        private const string expectedValue = "bar";
-
-        private const RegistryValueKind expectedKind = RegistryValueKind.String;
-
-        [TestInitialize]
-        public void TestInitialize()
+        [TestMethod]
+        public void IdentifiesNonexistentRegistryKey()
         {
-            registry = new MockRegistry();
+            Assert.IsFalse(registry.RegistryKeyExists(hive, view, subKey));
+        }
 
+        [TestMethod]
+        public void IdentifiesExistentRegistryKey()
+        {
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
+
+            Assert.IsTrue(registry.RegistryKeyExists(hive, view, subKey));
+        }
+
+        [TestMethod]
+        public void CreatesNewRegistryKey()
+        {
             registry.CreateRegistryKey(hive, view, subKey);
+
+            Assert.IsTrue(registry.data.ContainsKey(hive));
+            Assert.IsTrue(registry.data[hive].ContainsKey(view));
+            Assert.IsTrue(registry.data[hive][view].ContainsKey(subKey));
+        }
+
+        [TestMethod]
+        public void DeletesRegistryKey()
+        {
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
+
+            registry.DeleteRegistryKey(hive, view, subKey, recursive: true);
+
+            Assert.IsFalse(registry.data[hive][view].ContainsKey(subKey));
         }
 
         [TestMethod]
@@ -49,7 +59,10 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void IdentifiesExistentRegistryValue()
         {
-            registry.data[hive][view][subKey][name] = (expectedValue, expectedKind);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
+            {
+                [name] = (expectedValue, expectedKind)
+            };
 
             Assert.IsTrue(registry.RegistryValueExists(hive, view, subKey, name));
         }
@@ -57,7 +70,10 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void IdentifiesExistentDefaultRegistryValue()
         {
-            registry.data[hive][view][subKey][defaultValueName] = (expectedValue, expectedKind);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
+            {
+                [defaultValueName] = (expectedValue, expectedKind)
+            };
 
             Assert.IsTrue(registry.RegistryValueExists(hive, view, subKey, null));
             Assert.IsTrue(registry.RegistryValueExists(hive, view, subKey, defaultValueName));
@@ -66,6 +82,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void CreatesRegistryValue()
         {
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
             registry.SetRegistryValue(hive, view, subKey, name, expectedValue, expectedKind);
 
             Assert.IsTrue(registry.data.ContainsKey(hive));
@@ -80,7 +97,10 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void DeletesRegistryValue()
         {
-            registry.data[hive][view][subKey][name] = (expectedValue, expectedKind);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
+            {
+                [name] = (expectedValue, expectedKind)
+            };
 
             registry.DeleteRegistryValue(hive, view, subKey, name);
 
@@ -90,6 +110,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void CreatesDefaultRegistryValue()
         {
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase);
             registry.SetRegistryValue(hive, view, subKey, defaultValueName, expectedValue, expectedKind);
 
             Assert.IsTrue(registry.data.ContainsKey(hive));
@@ -104,7 +125,10 @@ namespace DevOptimal.SystemUtilities.Registry.Tests
         [TestMethod]
         public void DeletesDefaultRegistryValue()
         {
-            registry.data[hive][view][subKey][defaultValueName] = (expectedValue, expectedKind);
+            registry.data[hive][view][subKey] = new Dictionary<string, (object, RegistryValueKind)>(StringComparer.OrdinalIgnoreCase)
+            {
+                [defaultValueName] = (expectedValue, expectedKind)
+            };
 
             registry.DeleteRegistryValue(hive, view, subKey, defaultValueName);
 
