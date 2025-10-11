@@ -16,11 +16,11 @@ jobs:
 
     steps:
     - name: Clone
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0 # Entire history required by Nerdbank.GitVersioning
     - name: Set up .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v5
     - name: Restore
       run: dotnet restore
     - name: Build
