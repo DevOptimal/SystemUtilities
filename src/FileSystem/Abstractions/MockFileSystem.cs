@@ -249,7 +249,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
                 }
             }
 
-            data[destinationPath] = data[sourcePath];
+            data[destinationPath] = data[sourcePath].ToList();
             data.Remove(sourcePath);
         }
 
