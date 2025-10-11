@@ -51,7 +51,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (name == null) throw new ArgumentNullException(nameof(name));
 
             // Calls the overload that accepts multiple names for path composition.
-            return directory.GetDirectory([name]);
+            return directory.GetDirectory(new string[] { name });
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
             if (name == null) throw new ArgumentNullException(nameof(name));
 
             // Calls the overload that accepts multiple names for path composition.
-            return directory.GetFile([name]);
+            return directory.GetFile(new string[] { name });
         }
 
         /// <summary>

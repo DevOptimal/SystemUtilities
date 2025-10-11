@@ -70,7 +70,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         public static string[] SplitOnDirectorySeparator(this string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            return path.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+            return path.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         public static string[] SplitOnPathSeparator(this string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            return path.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries);
+            return path.Split(new char[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

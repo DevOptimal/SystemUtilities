@@ -168,10 +168,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var result = new byte[fileStream.Length];
-            fileStream.Read(result, 0, result.Length);
-            return result;
+            using (var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                var result = new byte[fileStream.Length];
+                fileStream.Read(result, 0, result.Length);
+                return result;
+            }
         }
 
         /// <summary>
@@ -184,15 +186,17 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = new StreamReader(fileStream);
-            var lines = new List<string>();
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            using (var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new StreamReader(fileStream))
             {
-                lines.Add(line);
+                var lines = new List<string>();
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+                return lines.ToArray();
             }
-            return [.. lines];
         }
 
         /// <summary>
@@ -206,15 +210,17 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = new StreamReader(fileStream, encoding);
-            var lines = new List<string>();
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            using (var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new StreamReader(fileStream, encoding))
             {
-                lines.Add(line);
+                var lines = new List<string>();
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+                return lines.ToArray();
             }
-            return [.. lines];
         }
 
         /// <summary>
@@ -227,9 +233,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = new StreamReader(fileStream);
-            return reader.ReadToEnd();
+            using (var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new StreamReader(fileStream))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         /// <summary>
@@ -243,9 +251,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = new StreamReader(fileStream, encoding);
-            return reader.ReadToEnd();
+            using (var fileStream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new StreamReader(fileStream, encoding))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         /// <summary>
@@ -258,8 +268,10 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var stream = fileSystem.OpenFileWrite(path);
-            stream.Write(bytes, 0, bytes.Length);
+            using (var stream = fileSystem.OpenFileWrite(path))
+            {
+                stream.Write(bytes, 0, bytes.Length);
+            }
         }
 
         /// <summary>
@@ -272,11 +284,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var stream = fileSystem.OpenFileWrite(path);
-            using var writer = new StreamWriter(stream);
-            foreach (var line in lines)
+            using (var stream = fileSystem.OpenFileWrite(path))
+            using (var writer = new StreamWriter(stream))
             {
-                writer.WriteLine(line);
+                foreach (var line in lines)
+                {
+                    writer.WriteLine(line);
+                }
             }
         }
 
@@ -291,11 +305,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var stream = fileSystem.OpenFileWrite(path);
-            using var writer = new StreamWriter(stream, encoding);
-            foreach (var line in lines)
+            using (var stream = fileSystem.OpenFileWrite(path))
+            using (var writer = new StreamWriter(stream, encoding))
             {
-                writer.WriteLine(line);
+                foreach (var line in lines)
+                {
+                    writer.WriteLine(line);
+                }
             }
         }
 
@@ -332,9 +348,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var stream = fileSystem.OpenFileWrite(path);
-            using var writer = new StreamWriter(stream);
-            writer.Write(contents);
+            using (var stream = fileSystem.OpenFileWrite(path))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(contents);
+            }
         }
 
         /// <summary>
@@ -348,9 +366,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.Extensions
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
 
-            using var stream = fileSystem.OpenFileWrite(path);
-            using var writer = new StreamWriter(stream, encoding);
-            writer.Write(contents);
+            using (var stream = fileSystem.OpenFileWrite(path))
+            using (var writer = new StreamWriter(stream, encoding))
+            {
+                writer.Write(contents);
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
         public static void DeleteOnReboot(string path)
         {
             // Use the Win32 API to schedule the file for deletion on reboot.
-            if (!PInvoke.MoveFileEx(@$"\\?\{path}", null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT))
+            if (!PInvoke.MoveFileEx($"\\\\?\\{path}", null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT))
             {
                 var errorCode = Marshal.GetLastWin32Error();
                 throw new Win32Exception(errorCode);
@@ -54,7 +54,7 @@ namespace DevOptimal.SystemUtilities.FileSystem
             }
 
             // Use the Win32 API to create a hard link.
-            if (!PInvoke.CreateHardLink(@$"\\?\{destFileName}", @$"\\?\{sourceFileName}"))
+            if (!PInvoke.CreateHardLink($"\\\\?\\{destFileName}", $"\\\\?\\{sourceFileName}"))
             {
                 var errorCode = Marshal.GetLastWin32Error();
                 throw new Win32Exception(errorCode);
