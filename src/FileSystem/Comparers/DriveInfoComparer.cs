@@ -32,7 +32,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Comparers
         public static IEqualityComparer<DriveInfo> Windows => new WindowsDriveInfoComparer();
 
         // Lazily initializes the platform-specific comparer based on the current OS.
-        private readonly Lazy<IEqualityComparer<DriveInfo>> comparerLazy = new(() =>
+        private readonly Lazy<IEqualityComparer<DriveInfo>> comparerLazy = new Lazy<IEqualityComparer<DriveInfo>>(() =>
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

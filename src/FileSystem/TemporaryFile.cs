@@ -6,17 +6,17 @@ namespace DevOptimal.SystemUtilities.FileSystem
     /// <summary>
     /// Represents a temporary file that is deleted when disposed.
     /// </summary>
-    public class TemporaryFile(string path, IFileSystem fileSystem) : IDisposable
+    public class TemporaryFile : IDisposable
     {
         private bool disposedValue;
 
         // The file system abstraction used for file operations.
-        private readonly IFileSystem fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        private readonly IFileSystem fileSystem;
 
         /// <summary>
         /// Gets the full path of the temporary file.
         /// </summary>
-        public string Path { get; } = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+        public string Path { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TemporaryFile"/> class using the default file system.
@@ -33,6 +33,12 @@ namespace DevOptimal.SystemUtilities.FileSystem
         public TemporaryFile(IFileSystem fileSystem)
             : this(GetUniqueTemporaryFileName(fileSystem), fileSystem)
         {
+        }
+
+        public TemporaryFile(string path, IFileSystem fileSystem)
+        {
+            Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));
+            this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests.Extensions
         [TestMethod]
         public void GetsDrive()
         {
-            Assert.IsTrue(FileUnderTest.Drive.Equals(new DriveInfo(@"C:\"), DriveInfoComparer.Default));
+            Assert.IsTrue(FileUnderTest.GetDrive().Equals(new DriveInfo(@"C:\"), DriveInfoComparer.Default));
         }
 
         [TestMethod]
