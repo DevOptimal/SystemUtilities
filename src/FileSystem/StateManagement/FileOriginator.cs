@@ -11,9 +11,6 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
     /// Originator for a file resource, supporting state capture and restoration using the Memento pattern.
     /// Handles file content persistence via a file cache.
     /// </summary>
-    /// <param name="path">The file path.</param>
-    /// <param name="fileCache">The file cache for storing file contents.</param>
-    /// <param name="fileSystem">The file system abstraction.</param>
     internal class FileOriginator : IOriginator<FileMemento>
     {
         /// <summary>
@@ -33,6 +30,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
 
         /// <summary>
         /// Gets the unique identifier for this file originator, normalized by platform.
+        /// Lower-cased on Windows for case-insensitive semantics; unchanged elsewhere.
         /// </summary>
         public string ID
         {
@@ -57,6 +55,13 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileOriginator"/> class.
+        /// </summary>
+        /// <param name="path">The file path whose contents are tracked.</param>
+        /// <param name="fileCache">The file cache used to persist file bytes.</param>
+        /// <param name="fileSystem">The file system abstraction used for file operations.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/>, <paramref name="fileCache"/>, or <paramref name="fileSystem"/> is null.</exception>
         public FileOriginator(string path, IFileCache fileCache, IFileSystem fileSystem)
         {
             Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));

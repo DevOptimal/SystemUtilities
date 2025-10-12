@@ -2,6 +2,10 @@
 
 namespace DevOptimal.SystemUtilities.FileSystem.Abstractions
 {
+    /// <summary>
+    /// Abstraction over basic file system operations used by the library. Implementations can wrap the real
+    /// operating system (see <see cref="DefaultFileSystem"/>) or provide test doubles (see <see cref="MockFileSystem"/>).
+    /// </summary>
     public interface IFileSystem
     {
         /// <summary>

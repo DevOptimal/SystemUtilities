@@ -9,8 +9,6 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
     /// <summary>
     /// Originator for a directory resource, supporting state capture and restoration using the Memento pattern.
     /// </summary>
-    /// <param name="path">The directory path.</param>
-    /// <param name="fileSystem">The file system abstraction.</param>
     internal class DirectoryOriginator : IOriginator<DirectoryMemento>
     {
         /// <summary>
@@ -25,6 +23,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
 
         /// <summary>
         /// Gets the unique identifier for this directory originator, normalized by platform.
+        /// Lower-cased on Windows for case-insensitive semantics; unchanged elsewhere.
         /// </summary>
         public string ID
         {
@@ -49,6 +48,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryOriginator"/> class.
+        /// </summary>
+        /// <param name="path">The directory path whose existence is tracked.</param>
+        /// <param name="fileSystem">The file system abstraction used for operations.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> or <paramref name="fileSystem"/> is null.</exception>
         public DirectoryOriginator(string path, IFileSystem fileSystem)
         {
             Path = System.IO.Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path)));

@@ -9,11 +9,6 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
     /// <summary>
     /// Originator for a registry value resource, supporting state capture and restoration using the Memento pattern.
     /// </summary>
-    /// <param name="hive">The registry hive.</param>
-    /// <param name="view">The registry view.</param>
-    /// <param name="subKey">The registry subkey path.</param>
-    /// <param name="name">The registry value name.</param>
-    /// <param name="registry">The registry abstraction.</param>
     internal class RegistryValueOriginator : IOriginator<RegistryValueMemento>
     {
         /// <summary>
@@ -43,9 +38,20 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 
         /// <summary>
         /// Gets the unique identifier for this registry value originator.
+        /// Lower-cased to provide case-insensitive semantics across platforms.
+        /// Includes hive, view, subkey, and value name ("(Default)" if unnamed).
         /// </summary>
         public string ID => $@"{Hive}\{View}\{SubKey}\\{Name ?? "(Default)"}".ToLower();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistryValueOriginator"/> class.
+        /// </summary>
+        /// <param name="hive">The registry hive.</param>
+        /// <param name="view">The registry view.</param>
+        /// <param name="subKey">The registry subkey path.</param>
+        /// <param name="name">The registry value name (null for the default value).</param>
+        /// <param name="registry">The registry abstraction.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="registry"/> is null.</exception>
         public RegistryValueOriginator(RegistryHive hive, RegistryView view, string subKey, string name, IRegistry registry)
         {
             Hive = hive;

@@ -29,6 +29,11 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
         /// <summary>
         /// Gets a unique identifier for this originator, normalized for the current operating system.
         /// </summary>
+        /// <remarks>
+        /// On Windows the identifier is lower-cased to provide case-insensitive semantics consistent with
+        /// the underlying platform's handling of environment variable names. On Linux and macOS the original
+        /// casing is preserved, reflecting the case-sensitive behavior of those platforms.
+        /// </remarks>
         public string ID
         {
             get
@@ -52,6 +57,13 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnvironmentVariableOriginator"/> class.
+        /// </summary>
+        /// <param name="name">The name of the environment variable to manage.</param>
+        /// <param name="target">The target scope in which the variable resides.</param>
+        /// <param name="environment">The environment abstraction used for get/set operations.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> or <paramref name="environment"/> is null.</exception>
         public EnvironmentVariableOriginator(string name, EnvironmentVariableTarget target, IEnvironment environment)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));

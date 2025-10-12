@@ -10,10 +10,11 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
     /// <summary>
     /// Manages transactional access and snapshots for registry resources (keys and values).
     /// </summary>
-    /// <param name="registry">The registry abstraction.</param>
-    /// <param name="persistenceDirectory">The directory for persisting caretaker data.</param>
     public class RegistrySnapshotter : Snapshotter
     {
+        /// <summary>
+        /// Registry abstraction used to query and mutate registry keys/values.
+        /// </summary>
         private readonly IRegistry registry;
 
         /// <summary>
@@ -33,12 +34,18 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrySnapshotter"/> class with the specified persistence directory.
+        /// Uses the default registry implementation.
         /// </summary>
         /// <param name="persistenceDirectory">The directory for persisting caretaker data.</param>
         public RegistrySnapshotter(DirectoryInfo persistenceDirectory)
             : this(new DefaultRegistry(), persistenceDirectory)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrySnapshotter"/> class with explicit registry and persistence directory.
+        /// </summary>
+        /// <param name="registry">The registry abstraction used for key/value operations.</param>
+        /// <param name="persistenceDirectory">The directory backing caretaker persistence.</param>
         public RegistrySnapshotter(IRegistry registry, DirectoryInfo persistenceDirectory)
             : base(new RegistryCaretakerSerializer(registry), persistenceDirectory)
         {

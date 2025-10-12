@@ -14,12 +14,29 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
     /// </summary>
     internal class FileSystemCaretakerSerializer : CaretakerSerializer
     {
+        /// <summary>
+        /// Discriminator value written to <see cref="CaretakerSerializer.resourceTypePropertyName"/> for directory caretakers.
+        /// </summary>
         private const string directoryResourceTypeName = "Directory";
+        /// <summary>
+        /// Discriminator value written to <see cref="CaretakerSerializer.resourceTypePropertyName"/> for file caretakers.
+        /// </summary>
         private const string fileResourceTypeName = "File";
 
+        /// <summary>
+        /// File system abstraction used to construct originators during deserialization.
+        /// </summary>
         private readonly IFileSystem fileSystem;
+        /// <summary>
+        /// File cache used to rehydrate file originators / mementos during deserialization.
+        /// </summary>
         private readonly IFileCache fileCache;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSystemCaretakerSerializer"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system abstraction to use when (re)creating originators.</param>
+        /// <param name="fileCache">The file cache abstraction used for file content persistence.</param>
         public FileSystemCaretakerSerializer(IFileSystem fileSystem, IFileCache fileCache)
         {
             this.fileSystem = fileSystem;
@@ -32,14 +49,16 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
         /// <param name="dictionary">The dictionary to convert.</param>
         /// <param name="connection">The database connection context.</param>
         /// <returns>The deserialized ICaretaker.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the resource type discriminator is unknown.</exception>
         protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
-            // Get caretaker fields
+            // Common caretaker metadata
             var id = AsString(dictionary[nameof(ICaretaker.ID)]);
             var parentId = AsString(dictionary[nameof(ICaretaker.ParentID)]);
             var processId = AsInteger(dictionary[nameof(ICaretaker.ProcessID)]);
             var processStartTime = AsDateTime(dictionary[nameof(ICaretaker.ProcessStartTime)]);
 
+            // Dispatch based on resource type discriminator.
             switch (dictionary[resourceTypePropertyName])
             {
                 case directoryResourceTypeName:
@@ -47,10 +66,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                     var directoryExists = AsBoolean(dictionary[nameof(DirectoryMemento.Exists)]);
 
                     var directoryOriginator = new DirectoryOriginator(directoryPath, fileSystem);
-                    var directoryMemento = new DirectoryMemento
-                    {
-                        Exists = directoryExists
-                    };
+                    var directoryMemento = new DirectoryMemento { Exists = directoryExists };
 
                     return new DirectoryCaretaker(id, parentId, processId, processStartTime, connection, directoryOriginator, directoryMemento);
                 case fileResourceTypeName:
@@ -58,13 +74,11 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                     var fileHash = AsString(dictionary[nameof(FileMemento.Hash)]);
 
                     var fileOriginator = new FileOriginator(filePath, fileCache, fileSystem);
-                    var fileMemento = new FileMemento
-                    {
-                        Hash = fileHash
-                    };
+                    var fileMemento = new FileMemento { Hash = fileHash };
 
                     return new FileCaretaker(id, parentId, processId, processStartTime, connection, fileOriginator, fileMemento);
-                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
@@ -73,6 +87,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
         /// </summary>
         /// <param name="caretaker">The caretaker to convert.</param>
         /// <returns>The dictionary representation.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the caretaker type is unknown.</exception>
         protected override IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker)
         {
             var result = new Dictionary<string, object>
@@ -83,6 +98,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                 [nameof(ICaretaker.ProcessStartTime)] = caretaker.ProcessStartTime.Ticks
             };
 
+            // Persist discriminator + resource specific data.
             switch (caretaker)
             {
                 case DirectoryCaretaker directoryCaretaker:
@@ -95,7 +111,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement.Serialization
                     result[nameof(FileOriginator.Path)] = fileCaretaker.Originator.Path;
                     result[nameof(FileMemento.Hash)] = fileCaretaker.Memento.Hash;
                     break;
-                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;

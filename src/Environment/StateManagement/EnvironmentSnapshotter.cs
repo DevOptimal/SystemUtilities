@@ -12,7 +12,10 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
     /// </summary>
     public class EnvironmentSnapshotter : Snapshotter
     {
-        private IEnvironment environment;
+        /// <summary>
+        /// The environment abstraction used to read and write environment variables.
+        /// </summary>
+        private readonly IEnvironment environment;
 
         /// <summary>
         /// Initializes a new instance of <see cref="EnvironmentSnapshotter"/> using the default environment and default persistence directory.
@@ -37,6 +40,12 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement
             : this(new DefaultEnvironment(), persistenceDirectory)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="EnvironmentSnapshotter"/> using the specified environment abstraction
+        /// and persistence directory for caretaker data.
+        /// </summary>
+        /// <param name="environment">The environment abstraction used to access environment variables.</param>
+        /// <param name="persistenceDirectory">The directory in which caretaker metadata is persisted.</param>
         public EnvironmentSnapshotter(IEnvironment environment, DirectoryInfo persistenceDirectory)
             : base(new EnvironmentCaretakerSerializer(environment), persistenceDirectory)
         {

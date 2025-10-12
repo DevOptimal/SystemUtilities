@@ -17,8 +17,16 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
         /// </summary>
         private const string environmentVariableResourceTypeName = "EnvironmentVariable";
 
+        /// <summary>
+        /// Environment abstraction used to create originators during deserialization.
+        /// </summary>
         private readonly IEnvironment environment;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnvironmentCaretakerSerializer"/> class.
+        /// </summary>
+        /// <param name="environment">The environment abstraction used to access environment variables.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="environment"/> is null.</exception>
         public EnvironmentCaretakerSerializer(IEnvironment environment)
         {
             this.environment = environment ?? throw new ArgumentNullException(nameof(environment));
@@ -49,13 +57,11 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                     var environmentVariableValue = AsString(dictionary[nameof(EnvironmentVariableMemento.Value)]);
 
                     var environmentVariableOriginator = new EnvironmentVariableOriginator(environmentVariableName, environmentVariableTarget, environment);
-                    var environmentVariableMemento = new EnvironmentVariableMemento
-                    {
-                        Value = environmentVariableValue
-                    };
+                    var environmentVariableMemento = new EnvironmentVariableMemento { Value = environmentVariableValue };
 
                     return new EnvironmentVariableCaretaker(id, parentId, processId, processStartTime, connection, environmentVariableOriginator, environmentVariableMemento);
-                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
@@ -86,7 +92,8 @@ namespace DevOptimal.SystemUtilities.Environment.StateManagement.Serialization
                     result[nameof(EnvironmentVariableOriginator.Target)] = environmentVariableCaretaker.Originator.Target.ToString();
                     result[nameof(EnvironmentVariableMemento.Value)] = environmentVariableCaretaker.Memento.Value;
                     break;
-                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;

@@ -8,10 +8,6 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
     /// <summary>
     /// Originator for a registry key resource, supporting state capture and restoration using the Memento pattern.
     /// </summary>
-    /// <param name="hive">The registry hive.</param>
-    /// <param name="view">The registry view.</param>
-    /// <param name="subKey">The registry subkey path.</param>
-    /// <param name="registry">The registry abstraction.</param>
     internal class RegistryKeyOriginator : IOriginator<RegistryKeyMemento>
     {
         /// <summary>
@@ -36,9 +32,18 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement
 
         /// <summary>
         /// Gets the unique identifier for this registry key originator.
+        /// Lower-cased to provide case-insensitive semantics across platforms.
         /// </summary>
         public string ID => $@"{Hive}\{View}\{SubKey}".ToLower();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistryKeyOriginator"/> class.
+        /// </summary>
+        /// <param name="hive">The registry hive.</param>
+        /// <param name="view">The registry view.</param>
+        /// <param name="subKey">The registry subkey path.</param>
+        /// <param name="registry">The registry abstraction.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="registry"/> is null.</exception>
         public RegistryKeyOriginator(RegistryHive hive, RegistryView view, string subKey, IRegistry registry)
         {
             Hive = hive;

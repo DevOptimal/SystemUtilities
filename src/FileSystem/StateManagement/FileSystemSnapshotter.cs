@@ -11,12 +11,16 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
     /// <summary>
     /// Manages transactional access and snapshots for file system resources (directories and files).
     /// </summary>
-    /// <param name="fileSystem">The file system abstraction.</param>
-    /// <param name="fileCache">The file cache for storing file contents.</param>
-    /// <param name="persistenceDirectory">The directory for persisting caretaker data.</param>
     public class FileSystemSnapshotter : Snapshotter
     {
+        /// <summary>
+        /// File system abstraction used to query and manipulate directories/files.
+        /// </summary>
         private readonly IFileSystem fileSystem;
+
+        /// <summary>
+        /// File cache implementation used to persist file contents for snapshots.
+        /// </summary>
         private readonly IFileCache fileCache;
 
         /// <summary>
@@ -43,6 +47,12 @@ namespace DevOptimal.SystemUtilities.FileSystem.StateManagement
             : this(fileSystem, new LocalFileCache(persistenceDirectory.GetDirectory("FileCache"), fileSystem), persistenceDirectory)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSystemSnapshotter"/> class with explicit file system, file cache, and persistence directory.
+        /// </summary>
+        /// <param name="fileSystem">The file system abstraction used for directory/file operations.</param>
+        /// <param name="fileCache">The file cache used to store file contents between snapshot and restore.</param>
+        /// <param name="persistenceDirectory">The directory backing caretaker persistence.</param>
         public FileSystemSnapshotter(IFileSystem fileSystem, IFileCache fileCache, DirectoryInfo persistenceDirectory)
             : base(new FileSystemCaretakerSerializer(fileSystem, fileCache), persistenceDirectory)
         {

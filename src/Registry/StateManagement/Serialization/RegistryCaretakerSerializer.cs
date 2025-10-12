@@ -16,30 +16,46 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
     /// </summary>
     internal class RegistryCaretakerSerializer : CaretakerSerializer
     {
+        /// <summary>
+        /// Discriminator value written to <see cref="CaretakerSerializer.resourceTypePropertyName"/> for registry key caretakers.
+        /// </summary>
         private const string registryKeyResourceTypeName = "RegistryKey";
+        /// <summary>
+        /// Discriminator value written to <see cref="CaretakerSerializer.resourceTypePropertyName"/> for registry value caretakers.
+        /// </summary>
         private const string registryValueResourceTypeName = "RegistryValue";
 
+        /// <summary>
+        /// Registry abstraction used to create originators during deserialization.
+        /// </summary>
         private readonly IRegistry registry;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistryCaretakerSerializer"/> class.
+        /// </summary>
+        /// <param name="registry">The registry abstraction used for originator operations.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="registry"/> is null.</exception>
         public RegistryCaretakerSerializer(IRegistry registry)
         {
             this.registry = registry;
         }
 
         /// <summary>
-        /// Converts a dictionary representation of a caretaker to an ICaretaker instance.
+        /// Converts a dictionary representation of a caretaker to an <see cref="ICaretaker"/> instance.
         /// </summary>
         /// <param name="dictionary">The dictionary to convert.</param>
         /// <param name="connection">The database connection context.</param>
-        /// <returns>The deserialized ICaretaker.</returns>
+        /// <returns>The deserialized caretaker.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the resource type discriminator is unknown.</exception>
         protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
-            // Get caretaker fields
+            // Common caretaker metadata
             var id = AsString(dictionary[nameof(ICaretaker.ID)]);
             var parentId = AsString(dictionary[nameof(ICaretaker.ParentID)]);
             var processId = AsInteger(dictionary[nameof(ICaretaker.ProcessID)]);
             var processStartTime = AsDateTime(dictionary[nameof(ICaretaker.ProcessStartTime)]);
 
+            // Dispatch based on resource type discriminator.
             switch (dictionary[resourceTypePropertyName])
             {
                 case registryKeyResourceTypeName:
@@ -49,10 +65,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     var registryKeyExists = AsBoolean(dictionary[nameof(RegistryKeyMemento.Exists)]);
 
                     var registryKeyOriginator = new RegistryKeyOriginator(registryKeyHive, registryKeyView, registryKeySubKey, registry);
-                    var registryKeyMemento = new RegistryKeyMemento
-                    {
-                        Exists = registryKeyExists
-                    };
+                    var registryKeyMemento = new RegistryKeyMemento { Exists = registryKeyExists };
 
                     return new RegistryKeyCaretaker(id, parentId, processId, processStartTime, connection, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
@@ -64,22 +77,20 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     var registryValueKind = AsEnum<RegistryValueKind>(dictionary[nameof(RegistryValueMemento.Kind)]);
 
                     var registryValueOriginator = new RegistryValueOriginator(registryValueHive, registryValueView, registryValueSubKey, registryValueName, registry);
-                    var registryValueMemento = new RegistryValueMemento
-                    {
-                        Value = registryValueValue,
-                        Kind = registryValueKind
-                    };
+                    var registryValueMemento = new RegistryValueMemento { Value = registryValueValue, Kind = registryValueKind };
 
                     return new RegistryValueCaretaker(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
-                default: throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
 
         /// <summary>
-        /// Converts an ICaretaker instance to a dictionary representation.
+        /// Converts an <see cref="ICaretaker"/> instance to a dictionary representation.
         /// </summary>
         /// <param name="caretaker">The caretaker to convert.</param>
         /// <returns>The dictionary representation.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the caretaker type is unknown.</exception>
         protected override IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker)
         {
             var result = new Dictionary<string, object>
@@ -90,6 +101,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                 [nameof(ICaretaker.ProcessStartTime)] = caretaker.ProcessStartTime.Ticks
             };
 
+            // Persist discriminator + resource specific data.
             switch (caretaker)
             {
                 case RegistryKeyCaretaker registryKeyCaretaker:
@@ -108,12 +120,21 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     result[nameof(RegistryValueMemento.Value)] = ConvertFromRegistryValue(registryValueCaretaker.Memento.Value);
                     result[nameof(RegistryValueMemento.Kind)] = registryValueCaretaker.Memento.Kind.ToString();
                     break;
-                default: throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
+                default:
+                    throw new NotSupportedException($"The caretaker type '{caretaker.GetType().Name}' is not supported.");
             }
 
             return result;
         }
 
+        /// <summary>
+        /// Converts an in-memory registry value to a Base64 string suitable for JSON serialization.
+        /// A one-byte discriminator is prefixed to the payload:
+        /// 0x0 = byte[], 0x1 = int, 0x2 = long, 0x3 = string (ASCII), 0x4 = string[] (null-terminated ASCII segments).
+        /// </summary>
+        /// <param name="value">The registry value object.</param>
+        /// <returns>Base64 encoded representation or null.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the value type is not supported.</exception>
         private static string ConvertFromRegistryValue(object value)
         {
             if (value == null)
@@ -145,7 +166,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     foreach (var stringValue in stringArrayValue)
                     {
                         result.AddRange(Encoding.ASCII.GetBytes(stringValue));
-                        result.Add(0x0);
+                        result.Add(0x0); // segment terminator
                     }
                     break;
                 default:
@@ -154,6 +175,12 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
             return Convert.ToBase64String(result.ToArray());
         }
 
+        /// <summary>
+        /// Reconstructs a registry value from its serialized Base64 representation.
+        /// </summary>
+        /// <param name="o">The serialized object (expected to be a Base64 string or null).</param>
+        /// <returns>The reconstructed registry value (byte[], int, long, string, or string[]).</returns>
+        /// <exception cref="NotSupportedException">Thrown if the serialized form is invalid or unsupported.</exception>
         private static object ConvertToRegistryValue(object o)
         {
             if (o == null)
@@ -188,7 +215,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                         }
                         return result.ToArray();
                     default:
-                        throw new NotSupportedException($"Unknown type byte.");
+                        throw new NotSupportedException("Unknown type byte.");
                 }
             }
             else
