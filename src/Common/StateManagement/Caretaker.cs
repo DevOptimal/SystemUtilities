@@ -170,47 +170,24 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         /// <summary>
         /// Disposes the caretaker, removing it from the database and releasing the resource lock.
         /// </summary>
-        /// <param name="disposing">True if called from Dispose; false if called from finalizer.</param>
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!disposedValue)
             {
-                if (disposing)
+                Connection.BeginTransaction();
+                try
                 {
-                    Connection.BeginTransaction();
-                    try
-                    {
-                        Connection.UpdateCaretakers(RemoveCaretaker);
-                        Connection.CommitTransaction();
-                    }
-                    catch
-                    {
-                        Connection.RollbackTransaction();
-                        throw;
-                    }
+                    Connection.UpdateCaretakers(RemoveCaretaker);
+                    Connection.CommitTransaction();
+                }
+                catch
+                {
+                    Connection.RollbackTransaction();
+                    throw;
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~Caretaker()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        /// <summary>
-        /// Disposes the caretaker and suppresses finalization.
-        /// </summary>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

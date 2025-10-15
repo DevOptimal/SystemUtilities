@@ -54,48 +54,26 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         /// Disposes the snapshotter, restoring all caretakers associated with this instance and releasing resources.
         /// </summary>
         /// <param name="disposing">True if called from Dispose; false if called from finalizer.</param>
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!disposedValue)
             {
-                if (disposing)
+                Connection.BeginTransaction();
+                try
                 {
-                    Connection.BeginTransaction();
-                    try
-                    {
-                        Connection.UpdateCaretakers(RestoreCaretakers);
-                        Connection.CommitTransaction();
-                    }
-                    catch
-                    {
-                        Connection.RollbackTransaction();
-                        throw;
-                    }
-
-                    Connection.Dispose();
+                    Connection.UpdateCaretakers(RestoreCaretakers);
+                    Connection.CommitTransaction();
+                }
+                catch
+                {
+                    Connection.RollbackTransaction();
+                    throw;
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
+                Connection.Dispose();
+
                 disposedValue = true;
             }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~Snapshotter()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        /// <summary>
-        /// Disposes the snapshotter and suppresses finalization.
-        /// </summary>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>

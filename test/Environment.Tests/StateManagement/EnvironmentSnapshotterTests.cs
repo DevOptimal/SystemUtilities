@@ -102,6 +102,7 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
             using var snapshotter2 = CreateSnapshotter();
 
             snapshotter1.SnapshotEnvironmentVariable(name, target);
+            Assert.ThrowsExactly<ResourceLockedException>(() => snapshotter1.SnapshotEnvironmentVariable(name, target));
             Assert.ThrowsExactly<ResourceLockedException>(() => snapshotter2.SnapshotEnvironmentVariable(name, target));
         }
 
@@ -141,9 +142,10 @@ namespace DevOptimal.SystemUtilities.Environment.Tests.StateManagement
         [TestMethod]
         public void DoesNotRestoreSnapshotsFromCurrentProcess()
         {
+            environment.SetEnvironmentVariable(name, expectedValue, target);
+
             using var snapshotter = CreateSnapshotter();
 
-            //using var snapshot = snapshotter.SnapshotEnvironmentVariable(name, target);
             snapshotter.SnapshotEnvironmentVariable(name, target);
 
             environment.SetEnvironmentVariable(name, null, target);

@@ -172,7 +172,7 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
             {
                 throw new ObjectDisposedException(nameof(DatabaseConnection));
             }
-            reader.Dispose();
+            reader?.Dispose();
             reader = null;
             transaction = null;
             mutex.ReleaseMutex();
@@ -204,44 +204,18 @@ namespace DevOptimal.SystemUtilities.Common.StateManagement
         /// <summary>
         /// Releases resources used by the <see cref="DatabaseConnection"/>.
         /// </summary>
-        /// <param name="disposing">True if called from Dispose; false if called from finalizer.</param>
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!disposedValue)
             {
-                if (disposing)
-                {
-                }
-                if (reader != null)
-                {
-                    reader.Dispose();
-                    reader = null;
-                }
                 transaction = null;
+                reader?.Dispose();
+                reader = null;
                 mutex.Dispose();
                 mutex = null;
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~Snapshotter()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        /// <summary>
-        /// Disposes the <see cref="DatabaseConnection"/> and suppresses finalization.
-        /// </summary>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }
