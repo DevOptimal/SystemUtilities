@@ -386,6 +386,28 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             Assert.AreEqual(kind, actualKind);
         }
 
+        [TestMethod]
+        public void Snapshotter_SupportsNonASCIICharacters()
+        {
+            var hive = RegistryHive.LocalMachine;
+            var view = RegistryView.Default;
+            var subKey = @"SOFTWARE\Microsoft\Windows";
+            registry.CreateRegistryKey(hive, view, subKey);
+            var name = "变量"; // "variable" in Chinese
+            var value = "значение"; // "value" in Russian
+            var kind = RegistryValueKind.String;
+            registry.SetRegistryValue(hive, view, subKey, name, value, kind);
+            using (var snapshotter = CreateSnapshotter())
+            {
+                snapshotter.SnapshotRegistryValue(hive, view, subKey, name);
+                registry.SetRegistryValue(hive, view, subKey, name, "foo", RegistryValueKind.DWord);
+            }
+            Assert.IsTrue(registry.RegistryValueExists(hive, view, subKey, name));
+            var (actualValue, actualKind) = registry.GetRegistryValue(hive, view, subKey, name);
+            Assert.AreEqual(value, actualValue);
+            Assert.AreEqual(kind, actualKind);
+        }
+
         #region Persistence Tests
 
         [TestMethod]

@@ -40,15 +40,16 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         //    0x0 => byte[]        : raw bytes follow
         //    0x1 => int           : 4 bytes little-endian
         //    0x2 => long          : 8 bytes little-endian
-        //    0x3 => string        : ASCII bytes (NOTE: only ASCII supported; extended chars would be lost)
-        //    0x4 => string[]      : sequence of ASCII segments separated by single 0x0 terminator bytes
-        //  (A future enhancement could introduce UTF-8 support via a new discriminator value.)
+        //    0x3 => string        : UTF-8 bytes (no length prefix; rest of payload is the string)
+        //    0x4 => string[]      : repeated (4-byte little-endian length + UTF-8 bytes) segments
+        //
+        //  Notes:
+        //   * Length-prefixing for string[] allows embedded nulls and avoids ambiguity present in earlier terminator-based encoding.
         private const byte byteArrayType = 0x0;
         private const byte intType = 0x1;
         private const byte longType = 0x2;
         private const byte stringType = 0x3;
         private const byte stringArrayType = 0x4;
-        private const byte segmentTerminator = 0x0; // Terminator for individual strings in a serialized string[]
 
         /// <summary>
         /// Registry abstraction used to create originators during deserialization.
@@ -75,18 +76,16 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         /// <exception cref="NotSupportedException">Thrown if the resource type discriminator is unknown.</exception>
         protected override ICaretaker ConvertDictionaryToCaretaker(IDictionary<string, object> dictionary, DatabaseConnection connection)
         {
-            // Common caretaker metadata (these come from the base serializer contract).
-            // DateTime is stored as ticks for space & precision; conversion occurs in AsDateTime.
+            // Common metadata.
             var id = AsString(dictionary[nameof(ICaretaker.ID)]);
             var parentId = AsString(dictionary[nameof(ICaretaker.ParentID)]);
             var processId = AsInteger(dictionary[nameof(ICaretaker.ProcessID)]);
             var processStartTime = AsDateTime(dictionary[nameof(ICaretaker.ProcessStartTime)]);
 
-            // Dispatch based on resource type discriminator.
+            // Type dispatch.
             switch (dictionary[resourceTypePropertyName])
             {
                 case registryKeyResourceTypeName:
-                    // Registry Key caretaker reconstruction
                     var registryKeyHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryKeyOriginator.Hive)]);
                     var registryKeyView = AsEnum<RegistryView>(dictionary[nameof(RegistryKeyOriginator.View)]);
                     var registryKeySubKey = AsString(dictionary[nameof(RegistryKeyOriginator.SubKey)]);
@@ -97,12 +96,10 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
 
                     return new RegistryKeyCaretaker(id, parentId, processId, processStartTime, connection, registryKeyOriginator, registryKeyMemento);
                 case registryValueResourceTypeName:
-                    // Registry Value caretaker reconstruction
                     var registryValueHive = AsEnum<RegistryHive>(dictionary[nameof(RegistryValueOriginator.Hive)]);
                     var registryValueView = AsEnum<RegistryView>(dictionary[nameof(RegistryValueOriginator.View)]);
                     var registryValueSubKey = AsString(dictionary[nameof(RegistryValueOriginator.SubKey)]);
                     var registryValueName = AsString(dictionary[nameof(RegistryValueOriginator.Name)]);
-                    // Decode the compact Base64 payload back into its original .NET representation.
                     var registryValueValue = ConvertToRegistryValue(dictionary[nameof(RegistryValueMemento.Value)]);
                     var registryValueKind = AsEnum<RegistryValueKind>(dictionary[nameof(RegistryValueMemento.Kind)]);
 
@@ -111,7 +108,6 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
 
                     return new RegistryValueCaretaker(id, parentId, processId, processStartTime, connection, registryValueOriginator, registryValueMemento);
                 default:
-                    // Defensive: Unknown discriminator means either version skew or data corruption.
                     throw new NotSupportedException($"The resource type '{dictionary[resourceTypePropertyName]}' is not supported.");
             }
         }
@@ -124,17 +120,14 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         /// <exception cref="NotSupportedException">Thrown if the caretaker type is unknown.</exception>
         protected override IDictionary<string, object> ConvertCaretakerToDictionary(ICaretaker caretaker)
         {
-            // Baseline metadata shared by all caretakers.
             var result = new Dictionary<string, object>
             {
                 [nameof(ICaretaker.ID)] = caretaker.ID,
                 [nameof(ICaretaker.ParentID)] = caretaker.ParentID,
                 [nameof(ICaretaker.ProcessID)] = caretaker.ProcessID,
-                // Persist high resolution timestamp as ticks (Int64) for compactness.
                 [nameof(ICaretaker.ProcessStartTime)] = caretaker.ProcessStartTime.Ticks
             };
 
-            // Persist discriminator + resource specific data.
             switch (caretaker)
             {
                 case RegistryKeyCaretaker registryKeyCaretaker:
@@ -142,7 +135,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     result[nameof(RegistryKeyOriginator.Hive)] = registryKeyCaretaker.Originator.Hive.ToString();
                     result[nameof(RegistryKeyOriginator.View)] = registryKeyCaretaker.Originator.View.ToString();
                     result[nameof(RegistryKeyOriginator.SubKey)] = registryKeyCaretaker.Originator.SubKey;
-                    result[nameof(RegistryKeyMemento.Exists)] = registryKeyCaretaker.Memento.Exists; // Whether the key existed at snapshot time.
+                    result[nameof(RegistryKeyMemento.Exists)] = registryKeyCaretaker.Memento.Exists;
                     break;
                 case RegistryValueCaretaker registryValueCaretaker:
                     result[resourceTypePropertyName] = registryValueResourceTypeName;
@@ -150,7 +143,6 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     result[nameof(RegistryValueOriginator.View)] = registryValueCaretaker.Originator.View.ToString();
                     result[nameof(RegistryValueOriginator.SubKey)] = registryValueCaretaker.Originator.SubKey;
                     result[nameof(RegistryValueOriginator.Name)] = registryValueCaretaker.Originator.Name;
-                    // Encode value into compact Base64 + type-discriminator form.
                     result[nameof(RegistryValueMemento.Value)] = ConvertFromRegistryValue(registryValueCaretaker.Memento.Value);
                     result[nameof(RegistryValueMemento.Kind)] = registryValueCaretaker.Memento.Kind.ToString();
                     break;
@@ -162,18 +154,19 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         }
 
         /// <summary>
-        /// Converts an in-memory registry value to a Base64 string suitable for JSON serialization.
-        /// A one-byte discriminator is prefixed to the payload:
-        /// 0x0 = byte[], 0x1 = int, 0x2 = long, 0x3 = string (ASCII), 0x4 = string[] (null-terminated ASCII segments).
+        /// Converts an in-memory registry value to a Base64 string.
+        /// Format: [type-byte][payload...]
+        ///  Type 0x0: payload = raw bytes
+        ///  Type 0x1: payload = 4-byte little-endian int
+        ///  Type 0x2: payload = 8-byte little-endian long
+        ///  Type 0x3: payload = UTF-8 bytes of single string
+        ///  Type 0x4: payload = repeated segments: [4-byte length][UTF-8 bytes] ...
         /// </summary>
-        /// <param name="value">The registry value object.</param>
-        /// <returns>Base64 encoded representation or null.</returns>
-        /// <exception cref="NotSupportedException">Thrown if the value type is not supported.</exception>
         private static string ConvertFromRegistryValue(object value)
         {
             if (value == null)
             {
-                return null; // Preserve null distinct from empty containers.
+                return null;
             }
 
             var result = new List<byte>();
@@ -193,31 +186,27 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     break;
                 case string stringValue:
                     result.Add(stringType);
-                    // NOTE: ASCII encoding is chosen for compactness & determinism; non-ASCII chars would not round-trip.
-                    result.AddRange(Encoding.ASCII.GetBytes(stringValue));
+                    result.AddRange(Encoding.UTF8.GetBytes(stringValue));
                     break;
                 case string[] stringArrayValue:
                     result.Add(stringArrayType);
                     foreach (var stringValue in stringArrayValue)
                     {
-                        // Each element's ASCII bytes followed by a single 0x0 terminator so we can split during decode.
-                        result.AddRange(Encoding.ASCII.GetBytes(stringValue));
-                        result.Add(segmentTerminator);
+                        var bytes = Encoding.UTF8.GetBytes(stringValue);
+                        result.AddRange(BitConverter.GetBytes(bytes.Length)); // length prefix
+                        result.AddRange(bytes);
                     }
                     break;
                 default:
-                    // Defensive: Only explicitly supported registry value shapes are encoded.
                     throw new NotSupportedException($"{value.GetType().Name} is not a supported registry type.");
             }
             return Convert.ToBase64String(result.ToArray());
         }
 
         /// <summary>
-        /// Reconstructs a registry value from its serialized Base64 representation.
+        /// Reconstructs a registry value from its Base64 representation.
+        /// Mirrors ConvertFromRegistryValue format description.
         /// </summary>
-        /// <param name="o">The serialized object (expected to be a Base64 string or null).</param>
-        /// <returns>The reconstructed registry value (byte[], int, long, string, or string[]).</returns>
-        /// <exception cref="NotSupportedException">Thrown if the serialized form is invalid or unsupported.</exception>
         private static object ConvertToRegistryValue(object o)
         {
             if (o == null)
@@ -227,7 +216,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
 
             if (o is string s)
             {
-                var bytes = Convert.FromBase64String(s); // Throws if invalid Base64 -> surfaces data corruption early.
+                var bytes = Convert.FromBase64String(s);
 
                 switch (bytes[0])
                 {
@@ -238,18 +227,24 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
                     case longType:
                         return BitConverter.ToInt64(bytes, 1);
                     case stringType:
-                        return Encoding.ASCII.GetString(bytes, 1, bytes.Length - 1);
+                        return Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1);
                     case stringArrayType:
                         var result = new List<string>();
-                        var currentStartIndex = 1; // Start just after the discriminator byte.
-                        for (var i = currentStartIndex; i < bytes.Length; i++)
+                        var currentIndex = 1;
+                        while (currentIndex < bytes.Length)
                         {
-                            if (bytes[i] == segmentTerminator)
+                            if (currentIndex + sizeof(int) > bytes.Length)
                             {
-                                // Extract substring [currentStartIndex, i) and move past terminator.
-                                result.Add(Encoding.ASCII.GetString(bytes, currentStartIndex, i - currentStartIndex));
-                                currentStartIndex = i + 1;
+                                throw new NotSupportedException("Invalid string[] encoding: insufficient bytes for length prefix.");
                             }
+                            var segmentLength = BitConverter.ToInt32(bytes, currentIndex);
+                            currentIndex += sizeof(int);
+                            if (segmentLength < 0 || currentIndex + segmentLength > bytes.Length)
+                            {
+                                throw new NotSupportedException("Invalid string[] encoding: declared length exceeds available bytes.");
+                            }
+                            result.Add(Encoding.UTF8.GetString(bytes, currentIndex, segmentLength));
+                            currentIndex += segmentLength;
                         }
                         return result.ToArray();
                     default:
