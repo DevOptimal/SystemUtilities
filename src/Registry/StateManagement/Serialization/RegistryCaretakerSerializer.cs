@@ -64,7 +64,7 @@ namespace DevOptimal.SystemUtilities.Registry.StateManagement.Serialization
         public RegistryCaretakerSerializer(IRegistry registry)
         {
             // (We intentionally do not throw here because the interface usage patterns guarantee a valid instance.)
-            this.registry = registry;
+            this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }
 
         /// <summary>

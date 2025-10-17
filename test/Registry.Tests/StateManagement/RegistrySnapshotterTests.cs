@@ -400,7 +400,7 @@ namespace DevOptimal.SystemUtilities.Registry.Tests.StateManagement
             using (var snapshotter = CreateSnapshotter())
             {
                 snapshotter.SnapshotRegistryValue(hive, view, subKey, name);
-                registry.SetRegistryValue(hive, view, subKey, name, "foo", RegistryValueKind.DWord);
+                registry.SetRegistryValue(hive, view, subKey, name, "foo", RegistryValueKind.String);
             }
             Assert.IsTrue(registry.RegistryValueExists(hive, view, subKey, name));
             var (actualValue, actualKind) = registry.GetRegistryValue(hive, view, subKey, name);
