@@ -1,4 +1,3 @@
-using DevOptimal.SystemUtilities.FileSystem.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,20 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevOptimal.SystemUtilities.FileSystem.Tests
+namespace DevOptimal.SystemUtilities.FileSystem.Tests.Abstractions
 {
     [TestClass]
-    public class MockFileSystemTests
+    public class MockFileSystemTests : MockFileSystemTestBase
     {
-        private MockFileSystem fileSystem;
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            fileSystem = new MockFileSystem();
-        }
-
-
         [TestMethod]
         public void IdentifiesExistentAndNonexistentFiles()
         {
@@ -86,7 +76,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
                     }
 
                     CollectionAssert.AreEqual(expectedBytes, actualBytes);
-                }));
+                }, TestContext.CancellationToken));
             }
 
             Task.WaitAll([.. tasks]);
@@ -140,7 +130,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.data[Path.Combine(path, "bar")] = null;
             fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
 
-            Assert.AreEqual(1, fileSystem.GetDirectories(path, "*", SearchOption.TopDirectoryOnly).Length);
+            Assert.HasCount(1, fileSystem.GetDirectories(path, "*", SearchOption.TopDirectoryOnly));
         }
 
         [TestMethod]
@@ -152,7 +142,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.data[Path.Combine(path, "bar")] = null;
             fileSystem.data[Path.Combine(path, "bar", "baz")] = null;
 
-            Assert.AreEqual(2, fileSystem.GetDirectories(path, "*", SearchOption.AllDirectories).Length);
+            Assert.HasCount(2, fileSystem.GetDirectories(path, "*", SearchOption.AllDirectories));
         }
 
         [TestMethod]
@@ -164,7 +154,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.data[Path.Combine(path, "bar.txt")] = [];
             fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = [];
 
-            Assert.AreEqual(1, fileSystem.GetFiles(path, "*", SearchOption.TopDirectoryOnly).Length);
+            Assert.HasCount(1, fileSystem.GetFiles(path, "*", SearchOption.TopDirectoryOnly));
         }
 
         [TestMethod]
@@ -176,7 +166,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.data[Path.Combine(path, "bar.txt")] = [];
             fileSystem.data[Path.Combine(path, "bar", "baz.txt")] = [];
 
-            Assert.AreEqual(2, fileSystem.GetFiles(path, "*", SearchOption.AllDirectories).Length);
+            Assert.HasCount(2, fileSystem.GetFiles(path, "*", SearchOption.AllDirectories));
         }
 
         [TestMethod]
@@ -199,8 +189,8 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             fileSystem.CreateFile(@"C:\foo\baz.txt");
             fileSystem.CreateFile(@"C:\foo\baz\bar.txt");
 
-            Assert.AreEqual(2, fileSystem.GetDirectories(@"C:\foo", "*bar*", SearchOption.AllDirectories).Length);
-            Assert.AreEqual(2, fileSystem.GetFiles(@"C:\foo", "*bar*", SearchOption.AllDirectories).Length);
+            Assert.HasCount(2, fileSystem.GetDirectories(@"C:\foo", "*bar*", SearchOption.AllDirectories));
+            Assert.HasCount(2, fileSystem.GetFiles(@"C:\foo", "*bar*", SearchOption.AllDirectories));
         }
 
         [TestMethod]
@@ -242,5 +232,7 @@ namespace DevOptimal.SystemUtilities.FileSystem.Tests
             }
             CollectionAssert.AreEqual(expectedBytes, fileSystem.data[destinationPath]);
         }
+
+        public TestContext TestContext { get; set; }
     }
 }
