@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Library for common system utilities.</Description>
+    <Description>Common library for interacting with system resources.</Description>
   </PropertyGroup>
 
   <ItemGroup>
